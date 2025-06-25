@@ -4,11 +4,7 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Carbon\Carbon;
-use App\Models\Mtc;
-use App\Models\Blog;
 use App\Models\User;
-use App\Models\Chapter;
-use App\Models\Subscribe;
 use App\Models\SystemRole;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,6 +13,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {

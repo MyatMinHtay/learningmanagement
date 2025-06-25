@@ -26,8 +26,6 @@ class AuthController extends Controller
     public function index(Request $request)
     {
 
-    
-
         if (Auth::check()) {
             $user = auth()->user();
         }else{
@@ -118,7 +116,14 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
             $username = auth()->user()->username;
-            return redirect('/')->with('success', "Welcome Back $username");
+            $role = auth()->user()->role->role;
+
+            if($role == 'admin'){
+                return redirect()->route('users')->with('success', "Welcome Back $username");
+            }else{
+                return redirect()->route('home')->with('success', "Welcome Back $username");
+            }
+            
         }
 
         // Check if the email is incorrect

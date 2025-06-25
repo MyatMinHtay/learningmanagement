@@ -21,28 +21,43 @@
                 <a href="/" class="nav-item nav-link active">Home</a>
                 <a href="/about" class="nav-item nav-link">About</a>
                 <a href="/courses" class="nav-item nav-link">Courses</a>
-                <div class="nav-item dropdown">
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
-                    <div class="dropdown-menu fade-down m-0">
-                        <a href="/team" class="dropdown-item">Our Team</a>
-                        <a href="/testimonial" class="dropdown-item">Testimonial</a>
-                        
-                    </div>
-                </div>
+             
                 <a href="/contact" class="nav-item nav-link">Contact</a>
-                {{-- @auth
-                    <div class="nav-item dropdown">
-                    <a href="/" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">{{Auth::user()->username}}</a>
-                    <div class="dropdown-menu fade-down m-0">
-                        <a href="/profile/{{auth()->user()->username}}" class="dropdown-item">Profile</a>
-                        <a href="/admin/users" class="dropdown-item">Dashboard</a>
-                        <a href="/logout" class="dropdown-item">Logout</a>
-                        
+                @auth
+                    <div class="nav-item dropdown show">
+                        <a href="/" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">{{Auth::user()->username}}</a>
+                        <div class="dropdown-menu fade-down m-0 show">
+                            <a href="/profile/{{auth()->user()->username}}" class="dropdown-item">Profile</a>
+                            <a href="/admin/dashboard" class="dropdown-item">Dashboard</a>
+                            <a href="/logout" class="dropdown-item">Logout</a>
+                            
+                        </div>
                     </div>
-                </div>
-                @endauth --}}
+                @else 
+                    <a href="/login" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">Login<i class="fa fa-arrow-right ms-3"></i></a>
+                @endauth
+               
             </div>
-            <a href="/login" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">Join Now<i class="fa fa-arrow-right ms-3"></i></a>
+            
+            
+
+            
+
+            
         </div>
     </nav>
     <!-- Navbar End -->
+
+    @if (session('success'))
+    <x-alert type='success'>{{ session('success') }}</x-alert>
+    @endif
+    
+    @if (session('warning'))
+    <x-alert type='warning'>{{ session('warning') }}</x-alert>
+    @endif
+    
+    @if (session('danger'))
+    <x-alert type='danger'>{{ session('danger') }}</x-alert>
+    @endif
+    
+    <x-showerror name="error"></x-showerror>

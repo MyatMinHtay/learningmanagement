@@ -24,12 +24,12 @@
 
 
     <!-- Categories Start -->
-    <x-categories></x-categories>
+    {{-- <x-categories></x-categories> --}}
     <!-- Categories Start -->
 
-
+   
     <!-- Courses Start -->
-    <x-courses></x-courses>
+    <x-showcourses  :courses="$courses"></x-showcourses>
     <!-- Courses End -->
 
 

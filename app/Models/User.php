@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Scout\Searchable;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable , Searchable;
 
 
 
@@ -32,6 +33,16 @@ class User extends Authenticatable
         'created_at',
         'updated_at'
     ];
+
+    public function toSearchableArray()
+    {
+        return [
+            'username' => $this->username,
+            'email' => $this->email,
+            'rold_id' => $this->role_id
+        ];
+    }
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -76,6 +87,9 @@ class User extends Authenticatable
         $this->attributes['password'] = bcrypt($value);
     }
 
-   
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_students', 'student_id', 'course_id');
+    }
 
 }

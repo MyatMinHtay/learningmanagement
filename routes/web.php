@@ -5,21 +5,16 @@ use App\Models\CompletionReport;
 use App\Models\StudentInformation;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BlogController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ExportController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FirstFormController;
-use App\Http\Controllers\MtcCourseController;
-use App\Http\Controllers\FileUploadController;
-use App\Http\Controllers\SecondFormController;
 use App\Http\Controllers\SystemRoleController;
-use App\Http\Controllers\AdditionalFormController;
 use App\Http\Controllers\ForgotPasswordController;
-use App\Http\Controllers\CompletionReportController;
-use App\Http\Controllers\StudentInformationController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\GlobalSearchController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\LessonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,21 +36,21 @@ Route::get('/contact', [HomeController::class, 'showContact'])->name('contact');
 
 Route::get('/team', [HomeController::class, 'showTeam'])->name('team');
 Route::get('/testimonial', [HomeController::class, 'showTestimonial'])->name('testimonial');
-Route::get('/courses', [HomeController::class, 'showcourses'])->name('courses');
 
+Route::get('/search', [GlobalSearchController::class, 'globalSearch'])->name('search');
 
 Route::get('/register', [AuthController::class, 'create'])->name('register');
 Route::post('/register', [UserController::class, 'createuser'])->name('postregister');
 
 //Admin Dashboard
-Route::get('/admin/dashboard', [DashboardController::class, 'show'])->middleware('admincheck:dashboard');
+Route::get('/admin/dashboard', [DashboardController::class, 'show'])->middleware('admincheck:users');
 
 // Route::get('/preview-pdf/{filename}', [PDFController::class, 'previewPDF'])->name('preview.pdf');
 
 
 //Admin User Management 
 
-Route::get('/admin/users', [UserController::class, 'index'])->middleware('admincheck:users')->name('users');
+Route::get('/admin/users', [UserController::class, 'index'])->middleware('admincheck:admins')->name('users');
 Route::post('/admin/users/create', [UserController::class, 'createuser'])->middleware("admincheck:roles");
 Route::post('/admin/users/update/{user:username}', [UserController::class, 'updateuser'])->where('username', '[A-Za-z0-9_\-]+')->middleware('admincheck:roles')->name('admin.users.update');
 Route::get('/admin/users/edit/{user:username}', [UserController::class, 'edituser'])->where('username', '[A-Za-z0-9_\-]+')->middleware('admincheck:roles');
@@ -84,27 +79,67 @@ Route::get('/admin/roles/delete/{role:role}', [SystemRoleController::class, 'del
 
 
 //Course Create
-Route::get('/createcourse', [CoursesController::class, 'index'])->middleware('admincheck:user')->name('createcourse');
-Route::post('/course/create', [CoursesController::class, 'createcourse'])->middleware('admincheck:user')->name('courses');
-Route::get('{course:id}/editcourse', [CoursesController::class, 'editcourse'])->middleware('admincheck:user')->name('editcourse');
-Route::post('{course:id}/course/update', [CoursesController::class, 'updatecourse'])->middleware('admincheck:user')->name('updatecourse');
-
-
-
-Route::get('/student-search', [StudentInformationController::class, 'search'])->name('student.search');
-
-
-
+Route::get('/courses', [CourseController::class, 'index'])->name('courses');
+Route::get('/admin/courses', [CourseController::class, 'adminindex'])->middleware('admincheck:courses')->name('admincourses');
+Route::get('/courses/{course:id}', [CourseController::class, 'show'])->name('courses.show');
+Route::get('/admin/courses/create', [CourseController::class, 'create'])->middleware('admincheck:courses')->name('courses.create');
+Route::post('/admin/courses', [CourseController::class, 'store'])->middleware('admincheck:courses')->name('courses.store');
+Route::get('/admin/courses/{course}/edit', [CourseController::class, 'edit'])->middleware('admincheck:courses')->name('courses.edit');
+Route::put('/admin/courses/{course}', [CourseController::class, 'update'])->middleware('admincheck:courses')->name('courses.update');
+Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
 
 
 
 //Start Student Information 
 
-Route::get('/students', [StudentInformationController::class, 'index'])->middleware('admincheck:students')->name('students');
-Route::get('/students/create', [StudentInformationController::class, 'createstudent'])->middleware('admincheck:students')->name('students.create');
-Route::post('/students/create', [StudentInformationController::class, 'storestudent'])->middleware("admincheck:students")->name('students.store');
-Route::post('/students/update/{student:id}', [StudentInformationController::class, 'updatestudent'])->middleware('admincheck:students')->name('students.update');
-Route::get('/students/edit/{student:id}', [StudentInformationController::class, 'editstudent'])->middleware('admincheck:students')->name('students.edit');
-Route::get('/students/delete/{student:id}', [StudentInformationController::class, 'destorystudent'])->middleware('admincheck:students')->name('students.delete');
+Route::get('/students/dashboard', [DashboardController::class, 'showStudentDashboard'])->middleware('admincheck:students')->name('students.dashboard');
 
 
+//Quiz Start 
+
+// Public quiz listing or viewing (if needed)
+Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes');
+
+// Admin-only quiz management
+Route::get('/admin/quizzes', [QuizController::class, 'adminindex'])
+    ->middleware('admincheck:teachers')->name('quizzes.index');
+
+Route::get('/quizzes/{quiz:id}', [QuizController::class, 'show'])->name('quizzes.show');
+
+Route::get('/admin/quizzes/create', [QuizController::class, 'create'])
+    ->middleware('admincheck:teachers')->name('quizzes.create');
+
+Route::post('/admin/quizzes', [QuizController::class, 'store'])
+    ->middleware('admincheck:teachers')->name('quizzes.store');
+
+Route::get('/admin/quizzes/{quiz}/edit', [QuizController::class, 'edit'])
+    ->middleware('admincheck:teachers')->name('quizzes.edit');
+
+Route::put('/admin/quizzes/{quiz}', [QuizController::class, 'update'])
+    ->middleware('admincheck:teachers')->name('quizzes.update');
+
+Route::delete('/quizzes/{quiz}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
+
+//Lesson Start 
+// Admin-only lesson management
+Route::get('/admin/lessons', [LessonController::class, 'index'])
+    ->middleware('admincheck:teachers')->name('lessons.index');
+
+Route::get('/admin/lessons/create', [LessonController::class, 'create'])
+    ->middleware('admincheck:teachers')->name('lessons.create');
+
+Route::post('/admin/lessons', [LessonController::class, 'store'])
+    ->middleware('admincheck:teachers')->name('lessons.store');
+
+Route::get('/admin/lessons/{lesson}/edit', [LessonController::class, 'edit'])
+    ->middleware('admincheck:teachers')->name('lessons.edit');
+
+Route::put('/admin/lessons/{lesson}', [LessonController::class, 'update'])
+    ->middleware('admincheck:teachers')->name('lessons.update');
+
+Route::delete('/admin/lessons/{lesson}', [LessonController::class, 'destroy'])
+    ->name('lessons.destroy');
+
+
+
+//Lesson End

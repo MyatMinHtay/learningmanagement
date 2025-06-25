@@ -12,27 +12,34 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function show(){
-
-     
-    
-        if(Auth::check()){
-
+    public function show()
+    {
+        if (Auth::check()) {
             $users = User::count();
             $systemroles = SystemRole::all();
             
-
-          
-                
-            if(auth()->user()->role->role == 'administrator' || auth()->user()->role->role == "admin" || auth()->user()->role->role == "author"){
-                return view('admin.dashboard.dashboard',[
-                    'systemroles' => $systemroles
-                ]);
-            }else if(auth()->user()->role->role == 'user'){
-                return redirect()->back()->with('warning','access deined! You Are Not Admin');
+            // Get user permissions from role
+            $userPermissions = explode(',', auth()->user()->role->permissions);
+            
+            // Check permissions instead of roles
+            if (in_array('all', $userPermissions) || in_array('admins', $userPermissions)) {
+                return redirect()->route('users');
+            } else if (in_array('students', $userPermissions)) {
+                return redirect()->route('students.dashboard');
+            } else if (in_array('teachers', $userPermissions)) {
+                return redirect()->route('admincourses');
+            } else {
+                return back()->with('warning', 'Access denied! You do not have the required permissions to access this page.');
             }
-        }else{
-            return redirect('/login')->with('warning','access deined! Only Admin Can Access This Page');
+        } else {
+            return redirect('/login')->with('warning', 'access deined! Only Admin Can Access This Page');
         }
     }
+
+    public function showStudentDashboard(){
+        $user = Auth::user();
+        return view('admin.student.dashboard', compact('user'));
+    }
+
+    
 }

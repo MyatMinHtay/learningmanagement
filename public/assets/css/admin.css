@@ -1,0 +1,39 @@
+:root {
+    --primary: #06BBCC;
+    --light: #F0FBFC;
+    --dark: #181d38;
+}
+
+.formbtnboxes{
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    margin: 0 auto;
+}
+
+.formSubtmitBtn{
+    width: 100%;
+    background-color: var(--primary);
+    color: var(--light);
+    border-radius: 5px;
+    max-width: 280px;
+    height: 30px;
+    margin: 0 auto;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+}
+
+.formDeleteBtn{
+    width: 100%;
+    background-color: rgb(244, 109, 109);
+    color: var(--light);
+    border-radius: 5px;
+    max-width: 280px;
+    line-height: 30px;
+    height: 30px;
+    margin: 0 auto;
+    border-radius: 25px;
+    text-decoration: none;
+    text-align: center;
+}

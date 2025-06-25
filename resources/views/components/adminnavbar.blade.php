@@ -29,18 +29,64 @@
 
                          <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
 
-                              <li class="nav-item">
-                                   <a class="nav-link" href="/admin/roles">
-                                        <i class="fa-solid fa-r fs-5 icon"></i>
-                                        Roles</a>
-                              </li>
+                              @if (auth()->user()->role->role == 'student')
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="/admin/courses">
 
-                              <li class="nav-item">
-                                   <a class="nav-link" href="/admin/users">
+                                             <i class="fa-solid fa-c fs-5 icon"></i>
+                                             Courses</a>
+                                   </li>
 
-                                        <i class="fa-solid fa-user fs-5 icon"></i>
-                                        Users</a>
-                              </li>
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="/admin/assignments">
+
+                                             <i class="fa-solid fa-a fs-5 icon"></i>
+                                             Assignments</a>
+                                   </li>
+                              @endif
+
+                              @if (auth()->user()->role->role == 'teacher')
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="/admin/courses">
+
+                                             <i class="fa-solid fa-c fs-5 icon"></i>
+                                             Courses</a>
+                                   </li>
+
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="/admin/assignments">
+
+                                             <i class="fa-solid fa-a fs-5 icon"></i>
+                                             Assignments</a>
+                                   </li>
+
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('lessons.index') }}">
+
+                                             <i class="fa-solid fa-l fs-5 icon"></i>
+                                             Lessons</a>
+                                   </li>
+
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('quizzes.index') }}">
+
+                                             <i class="fa-solid fa-q fs-5 icon"></i>
+                                             Quizs</a>
+                                   </li>
+                              @endif
+
+                              @if (auth()->user()->role->role == 'adminstrator')
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="/admin/roles">
+                                             <i class="fa-solid fa-r fs-5 icon"></i>
+                                             Roles</a>
+                                   </li>
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="/admin/users">
+                                             <i class="fa-solid fa-u fs-5 icon"></i>
+                                             Users</a>
+                                   </li>
+                              @endif
 
                               <li class="nav-item">
                                    <a class="nav-link" href="/logout">
@@ -75,3 +121,9 @@
 @if (session('danger'))
 <x-alert type='danger'>{{ session('danger') }}</x-alert>
 @endif
+
+<x-showerror name="error"></x-showerror>
+
+@foreach($errors->all() as $error)
+  <li>{{ $error }}</li>
+@endforeach

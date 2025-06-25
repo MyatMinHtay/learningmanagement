@@ -2,19 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Blog;
-use App\Models\Chapter;
-use App\Models\Mtc;
-use App\Models\Order;
-use App\Models\SaveWebtoon;
-use App\Models\StarPackage;
-use App\Models\Subscribe;
+
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
-use Illuminate\Validation\Rule;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use App\Models\Course;
 
 class HomeController extends Controller
 {
@@ -31,6 +21,9 @@ class HomeController extends Controller
     }
 
     public function showcourses(){
+
+        $courses = Course::all();
+
         return view('courses');
     }
 

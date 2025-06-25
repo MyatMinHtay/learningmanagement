@@ -27,6 +27,9 @@
     <!-- Customized Bootstrap Stylesheet -->
     <link href="{{asset('/assets/css/bootstrap.min.css')}}" rel="stylesheet">
 
+       {{-- jquery ui css 1 js1  --}}
+    <link href="{{ asset('./assets/css/jquery-ui.min.css') }}" rel="stylesheet"  type="text/css">
+
     <!-- Custom Stylesheet -->
     <link href="{{asset('/assets/css/style.css')}}" rel="stylesheet">
 </head>
@@ -41,12 +44,14 @@
   
     <!-- JavaScript Libraries -->
     <script src="{{asset('/assets/js/jquery.min.js')}}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+     <!-- bootstrap css1 js1  -->
+    <script src="{{ asset('/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}" type="text/javascript"></script>
     <script src="{{asset('/assets/lib/wow/wow.min.js')}}"></script>
     <script src="{{asset('/assets/lib/easing/easing.min.js')}}"></script>
     <script src="{{asset('/assets/lib/waypoints/waypoints.min.js')}}"></script>
     <script src="{{asset('/assets/lib/owlcarousel/owl.carousel.min.js')}}"></script>
-
+    {{-- jquery ui css 1 js1 --}}
+    <script src="{{ asset('/assets/js/jquery-ui.min.js') }}" type="text/javascript"></script>
     <!-- Custom Javascript -->
     <script src="{{asset('/assets/js/main.js')}}"></script>
 </body>
