@@ -8,6 +8,8 @@
     <meta content="" name="keywords">
     <meta content="" name="description">
 
+     <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- Favicon -->
     <link href="/assets/img/favicon.ico" rel="icon">
 

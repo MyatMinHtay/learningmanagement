@@ -46,7 +46,8 @@
             
         </div>
     </nav>
-    <!-- Navbar End -->
+    <div class="mt-5">
+        <!-- Navbar End -->
 
     @if (session('success'))
     <x-alert type='success'>{{ session('success') }}</x-alert>
@@ -61,3 +62,4 @@
     @endif
     
     <x-showerror name="error"></x-showerror>
+    </div>

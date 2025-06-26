@@ -101,8 +101,19 @@ Route::get('/admin/courses/{course}/edit', [CourseController::class, 'edit'])->m
 Route::put('/admin/courses/{course}', [CourseController::class, 'update'])->middleware('admincheck:courses')->name('courses.update');
 Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
 
+//Enroll Course
+Route::post('/courses/{course}/enroll', [CourseController::class, 'enrollJson'])->middleware('auth');
+
+//Show lesson
+Route::get('/courses/{course}/lessons', [CourseController::class, 'showLessons'])->middleware('auth')->name('showlesson');
 
 
+//Quiz 
+
+Route::get('/quiz/{quiz}/start', [QuizController::class, 'start'])->middleware('auth')->name('quiz.start');
+Route::post('/quiz/{quiz}/submit', [QuizController::class, 'submit'])->middleware('auth')->name('quiz.submit');
+
+Route::get('/quiz/{quiz}/result', [QuizController::class, 'result'])->middleware('auth')->name('quiz.result');
 //Start Student Information 
 
 Route::get('/students/dashboard', [DashboardController::class, 'showStudentDashboard'])->middleware('admincheck:students')->name('students.dashboard');

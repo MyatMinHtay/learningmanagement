@@ -8,6 +8,13 @@ use App\Models\Course;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\Question;
+use App\Models\Option;
+use App\Models\Choice;
+use App\Models\QuizAnswer;
+use App\Models\QuizQuestion;
+use App\Models\QuizAttempt;
+
 
 class QuizController extends Controller
 {
@@ -179,4 +186,110 @@ class QuizController extends Controller
         $quiz->delete();
         return redirect()->route('quizzes.index')->with('success', 'Quiz deleted successfully.');
     }
+
+
+    public function start(Quiz $quiz)
+{
+    $student = auth()->user();
+
+    // Check enrollment
+    if (!DB::table('course_students')->where('course_id', $quiz->course_id)->where('student_id', $student->id)->exists()) {
+        return back()->with('danger', 'You are not enrolled in this course.');
+
+        
+    }
+
+    // Check if already attempted
+    $attempt = DB::table('quiz_attempts')
+        ->where('quiz_id', $quiz->id)
+        ->where('student_id', $student->id)
+        ->first();
+
+    if ($attempt && $attempt->is_completed) {
+        return redirect()->back()->with([
+            'error' => 'You have already completed this quiz.']);
+    }
+
+    // Start or resume attempt
+    if (!$attempt) {
+        $attemptId = DB::table('quiz_attempts')->insertGetId([
+            'quiz_id' => $quiz->id,
+            'student_id' => $student->id,
+            'started_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+    } else {
+        $attemptId = $attempt->id;
+    }
+
+    $quiz->load('questions.choices');
+
+    return view('quizzes.start', compact('quiz', 'attemptId'));
+}
+
+
+    public function submit(Request $request, Quiz $quiz)
+    {
+        $request->validate([
+            'attempt_id' => 'required|exists:quiz_attempts,id',
+            'answers' => 'required|array',
+        ]);
+
+        $attempt = QuizAttempt::where('id', $request->attempt_id)
+            ->where('quiz_id', $quiz->id)
+            ->where('student_id', auth()->id())
+            ->firstOrFail();
+
+        // Prevent re-submission
+        if ($attempt->is_completed) {
+            return redirect()->back()->with('error', 'Quiz already submitted.');
+        }
+
+        $score = 0;
+        $total = $quiz->questions->count();
+
+        foreach ($quiz->questions as $question) {
+            $selectedChoiceId = $request->input("answers.{$question->id}");
+
+            if ($selectedChoiceId) {
+                // Save the answer
+                QuizAnswer::create([
+                    'quiz_attempt_id' => $attempt->id,
+                    'question_id' => $question->id,
+                    'choice_id' => $selectedChoiceId,
+                ]);
+
+                // Compare with correct choice
+                $correctChoice = $question->choices()->where('is_correct', true)->first();
+                if ($correctChoice && $correctChoice->id == $selectedChoiceId) {
+                    $score++;
+                }
+            }
+        }
+
+        // Finalize attempt
+        $attempt->update([
+            'score' => $score,
+            'is_completed' => true,
+            'ended_at' => now(),
+        ]);
+
+        return redirect()->route('quiz.result', $quiz->id)->with('success', 'Quiz submitted successfully.');
+    }
+
+    public function result(Quiz $quiz)
+    {
+        $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question.choices'])
+            ->where('quiz_id', $quiz->id)
+            ->where('student_id', auth()->id())
+            ->where('is_completed', true)
+            ->latest('ended_at')
+            ->firstOrFail();
+
+        return view('quizzes.result', compact('quiz', 'attempt'));
+    }
+
+
+
 }

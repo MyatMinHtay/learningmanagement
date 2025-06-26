@@ -205,4 +205,55 @@ class CourseController extends Controller
 
         return redirect()->route('admincourses')->with('success', 'Course deleted successfully.');
     }
+
+   public function enrollJson(Request $request, Course $course)
+    {
+
+        $student = auth()->user();
+        $studentId = $student->id;
+
+        if (auth()->user()->role->role != 'student') { 
+            return response()->json(['status' => 'error', 'message' => 'Only students can enroll.'], 403);
+        }
+
+        $alreadyEnrolled = DB::table('course_students')
+            ->where('course_id', $course->id)
+            ->where('student_id', $studentId)
+            ->exists();
+
+        if ($alreadyEnrolled) {
+            return response()->json(['status' => 'error', 'message' => 'You are already enrolled in this course.'], 409);
+        }
+
+        DB::table('course_students')->insert([
+            'course_id' => $course->id,
+            'student_id' => $studentId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json(['status' => 'success', 'message' => 'Successfully enrolled in the course.']);
+    }
+
+    public function showLessons(Course $course)
+    {
+        $studentId = auth()->id();
+
+        $isEnrolled = DB::table('course_students')
+            ->where('course_id', $course->id)
+            ->where('student_id', $studentId)
+            ->exists();
+
+        if (!$isEnrolled) {
+            return redirect()->back()->withErrors(['access' => 'You must be enrolled to view the lessons.']);
+        }
+
+        // Load lessons
+        $lessons = $course->lessons()->get(); // Assuming Course has lessons() relationship
+
+        return view('courses.lessons', compact('course', 'lessons'));
+    }
+
+
+
 }
