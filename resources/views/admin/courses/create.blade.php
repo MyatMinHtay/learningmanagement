@@ -48,8 +48,8 @@
 
                 <div class="col-md-12">
                     
-                    <x-error name="modules.*.title"></x-error>
-                    <x-error name="modules.*.content"></x-error>
+                    <x-moduleerror name="modules.*.title"></x-moduleerror>
+                    <x-moduleerror name="modules.*.content"></x-moduleerror>
                 </div>
             </div>
 

@@ -63,8 +63,21 @@ Route::post('/login', [AuthController::class, 'postLogin'])->middleware('guest')
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
 //Profile 
-Route::get('/profile/{user:username}', [HomeController::class, 'showprofile'])->where('user', '[A-z\d\-_]+')->middleware('auth');
-Route::post('/editprofile', [AuthController::class, 'updateprofile'])->middleware('auth');
+
+// Show user profile by username
+Route::get('/profile/{user:username}', [HomeController::class, 'showprofile'])
+    ->middleware('auth')
+    ->name('profile.show');
+
+// Show edit profile form
+Route::get('/profile/{user:id}/edit', [AuthController::class, 'editprofile'])
+    ->middleware('auth')
+    ->name('profile.edit');
+
+// Process profile update
+Route::post('/profile/{user:id}/edit', [AuthController::class, 'updateprofile'])
+    ->middleware('auth')
+    ->name('profile.update');
 
 
 //Admin System Roles 

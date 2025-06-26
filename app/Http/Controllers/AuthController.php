@@ -43,6 +43,14 @@ class AuthController extends Controller
         ]);
     }
 
+    public function editprofile(User $user)
+    {
+        
+        return view('auth.editprofile',[
+            'user' => $user
+        ]);
+    }
+
     //create
     public function store()
     {
@@ -154,7 +162,6 @@ class AuthController extends Controller
 
             'email' => 'nullable|email|unique:users,email,' . $user->id,
             'username' => 'nullable|regex:/^[A-Za-z0-9\-_]+$/|unique:users,username,' . $user->id,
-            'usermtc_id' => 'required',
             'userphoto' => ['mimes:jpeg,png,jpg', 'max:2048', 'sometimes'],
             'password' => 'sometimes',
             'new_password' => 'nullable',
