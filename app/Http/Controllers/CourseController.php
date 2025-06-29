@@ -9,42 +9,66 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Validation\Rule;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\User;
+use App\Models\CourseModule;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class CourseController extends Controller
 {
     public function index()
     {
+        try {
+            $courses = Course::latest()->paginate(10);
+            
+            return view('courses',[
+                'courses' => $courses
+            ]);
 
-    
-        $courses = Course::latest()->paginate(10);
-
-        
-        return view('courses',[
-            'courses' => $courses
-        ]);
+        } catch (Exception $e) {
+            Log::error('Error in courses index: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load courses. Please try again.');
+        }
     }
 
     public function show(Course $course)
     {
+        try {
+            return view('showcourse', [
+                'course' => $course
+            ]);
 
-       
-        return view('showcourse', [
-            'course' => $course
-        ]);
+        } catch (Exception $e) {
+            Log::error('Error in course show: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load course details. Please try again.');
+        }
     }
 
     public function adminindex()
     {
-        $courses = Course::latest()->paginate(10);
+        try {
+            $teacher = auth()->user();
+            $courses = Course::where('created_by', $teacher->id)->latest()->paginate(10);
 
-        
+            return view('admin.courses.index', compact('courses'));
 
-        return view('admin.courses.index', compact('courses'));
+        } catch (Exception $e) {
+            Log::error('Error in admin courses index: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load courses. Please try again.');
+        }
     }
 
     public function create()
     {
-        return view('admin.courses.create');
+        try {
+            return view('admin.courses.create');
+
+        } catch (Exception $e) {
+            Log::error('Error in course create: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load course creation form. Please try again.');
+        }
     }
 
     public function store(Request $request)
@@ -108,13 +132,17 @@ class CourseController extends Controller
 
     public function edit(Course $course)
     {
-        $course->load(['modules' => function ($query) {
-            $query->orderBy('order');
-        }]);
+        try {
+            $course->load(['modules' => function ($query) {
+                $query->orderBy('order');
+            }]);
 
+            return view('admin.courses.edit', compact('course'));
 
-
-        return view('admin.courses.edit', compact('course'));
+        } catch (Exception $e) {
+            Log::error('Error in course edit: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load course edit form. Please try again.');
+        }
     }
 
 
@@ -206,52 +234,86 @@ class CourseController extends Controller
         return redirect()->route('admincourses')->with('success', 'Course deleted successfully.');
     }
 
-   public function enrollJson(Request $request, Course $course)
+    public function enrollJson(Request $request, Course $course)
     {
+        try {
+            $student = auth()->user();
+            $studentId = $student->id;
 
-        $student = auth()->user();
-        $studentId = $student->id;
+            if (auth()->user()->role->role != 'student') { 
+                return response()->json(['status' => 'error', 'message' => 'Only students can enroll.'], 403);
+            }
 
-        if (auth()->user()->role->role != 'student') { 
-            return response()->json(['status' => 'error', 'message' => 'Only students can enroll.'], 403);
+            $alreadyEnrolled = DB::table('course_students')
+                ->where('course_id', $course->id)
+                ->where('student_id', $studentId)
+                ->exists();
+
+            if ($alreadyEnrolled) {
+                return response()->json(['status' => 'error', 'message' => 'You are already enrolled in this course.'], 409);
+            }
+
+            DB::table('course_students')->insert([
+                'course_id' => $course->id,
+                'student_id' => $studentId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Create notification for course creator
+            if ($course->created_by) {
+                Notification::createEnrollmentNotification(
+                    $course->created_by,
+                    $studentId,
+                    $course->id,
+                    $course->name
+                );
+            }
+
+            return response()->json(['status' => 'success', 'message' => 'Successfully enrolled in the course.']);
+
+        } catch (Exception $e) {
+            Log::error('Error in enrollJson: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'Failed to enroll. Please try again.'], 500);
         }
-
-        $alreadyEnrolled = DB::table('course_students')
-            ->where('course_id', $course->id)
-            ->where('student_id', $studentId)
-            ->exists();
-
-        if ($alreadyEnrolled) {
-            return response()->json(['status' => 'error', 'message' => 'You are already enrolled in this course.'], 409);
-        }
-
-        DB::table('course_students')->insert([
-            'course_id' => $course->id,
-            'student_id' => $studentId,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        return response()->json(['status' => 'success', 'message' => 'Successfully enrolled in the course.']);
     }
 
     public function showLessons(Course $course)
     {
-        $studentId = auth()->id();
+        try {
+            $studentId = auth()->id();
 
-        $isEnrolled = DB::table('course_students')
-            ->where('course_id', $course->id)
-            ->where('student_id', $studentId)
-            ->exists();
+            $isEnrolled = DB::table('course_students')
+                ->where('course_id', $course->id)
+                ->where('student_id', $studentId)
+                ->exists();
 
-        if (!$isEnrolled) {
-            return redirect()->back()->withErrors(['access' => 'You must be enrolled to view the lessons.']);
+            if (!$isEnrolled) {
+                return redirect()->back()->withErrors(['access' => 'You must be enrolled to view the lessons.']);
+            }
+
+            // Load lessons
+            $lessons = $course->lessons()->get(); // Assuming Course has lessons() relationship
+
+            return view('courses.lessons', compact('course', 'lessons'));
+
+        } catch (Exception $e) {
+            Log::error('Error in showLessons: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load lessons. Please try again.');
         }
+    }
 
-        // Load lessons
-        $lessons = $course->lessons()->get(); // Assuming Course has lessons() relationship
+    public function showStudentCourses(User $student)
+    {
+        try {
+            $studentCourses = $student->courses()->paginate(20);
 
-        return view('courses.lessons', compact('course', 'lessons'));
+            return view('admin.student.courses', compact('studentCourses'));
+
+        } catch (Exception $e) {
+            Log::error('Error in showStudentCourses: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load student courses. Please try again.');
+        }
     }
 
 

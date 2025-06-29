@@ -15,6 +15,8 @@
             <th>ID</th>
             <th>Title</th>
             <th>Course</th>
+            <th>Course Creator</th>
+            <th>Quiz Creator</th>
             <th>Questions</th>
             <th>Marks</th>
             <th>Time Limit</th>
@@ -28,6 +30,8 @@
               <td>{{ $quiz->id }}</td>
               <td>{{ $quiz->title ?? '—' }}</td>
               <td>{{ $quiz->course->name ?? '—' }}</td>
+              <td>{{ $quiz->course->creator ? $quiz->course->creator->username : 'N/A' }}</td>
+              <td>{{ $quiz->creator ? $quiz->creator->username : 'N/A' }}</td>
               <td>{{ $quiz->total_questions }}</td>
               <td>{{ $quiz->total_marks }}</td>
               <td>
@@ -53,7 +57,7 @@
               </td>
             </tr>
           @empty
-            <tr><td colspan="8" class="text-center">No quizzes found</td></tr>
+            <tr><td colspan="10" class="text-center">No quizzes found</td></tr>
           @endforelse
         </tbody>
       </table>

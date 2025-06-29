@@ -18,6 +18,7 @@ class Quiz extends Model
         'total_questions',
         'total_time',
         'is_time_limited',
+        'grade',
     ];
 
     public function course(){
@@ -27,4 +28,15 @@ class Quiz extends Model
     public function questions(){
         return $this->hasMany(Question::class);
     }
+
+    public function attempts()
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
 }

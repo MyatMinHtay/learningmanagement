@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -21,42 +22,46 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
+        try {
+            $name = $request->input('name');
+            $role = $request->input('role');
+            $email = $request->input('email');
+            if ($name || $role || $email) {
+                $query = User::query();
 
-        $name = $request->input('name');
-        $role = $request->input('role');
-        $email = $request->input('email');
-        if ($name || $role || $email) {
-            $query = User::query();
+                if ($name) {
+                    $query->where('username', 'LIKE', '%' . $name . '%');
+                }
 
-            if ($name) {
-                $query->where('username', 'LIKE', '%' . $name . '%');
+                if ($role) {
+                    $query->where('role', $role);
+                }
+
+                if ($email) {
+                    $query->where('email', 'LIKE', '%' . $email . '%');
+                }
+
+                $users = $query->join('system_roles', 'users.role_id', '=', 'system_roles.id')
+                    ->select('users.*', 'system_roles.role', 'system_roles.id as roleid')->paginate(30);
+            } else {
+                $users =  User::latest()
+                    ->join('system_roles', 'users.role_id', '=', 'system_roles.id')
+                    ->select('users.*', 'system_roles.role', 'system_roles.id as roleid')
+                    ->paginate(30)->withQueryString();
             }
 
-            if ($role) {
-                $query->where('role', $role);
-            }
 
-            if ($email) {
-                $query->where('email', 'LIKE', '%' . $email . '%');
-            }
+            $systemroles = SystemRole::all();
 
-            $users = $query->join('system_roles', 'users.role_id', '=', 'system_roles.id')
-                ->select('users.*', 'system_roles.role', 'system_roles.id as roleid')->paginate(30);
-        } else {
-            $users =  User::latest()
-                ->join('system_roles', 'users.role_id', '=', 'system_roles.id')
-                ->select('users.*', 'system_roles.role', 'system_roles.id as roleid')
-                ->paginate(30)->withQueryString();
+            return view('admin.users.index', [
+                "users" => $users,
+                "systemroles" => $systemroles,
+                "request" => $request,
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error in users index: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load users. Please try again.');
         }
-
-
-        $systemroles = SystemRole::all();
-
-        return view('admin.users.index', [
-            "users" => $users,
-            "systemroles" => $systemroles,
-            "request" => $request,
-        ]);
     }
 
     public function createuser()
@@ -114,14 +119,17 @@ class UserController extends Controller
 
     public function edituser(User $user, Request $request)
     {
-
-        
-        $systemroles = SystemRole::all();
-        return view('admin.users.edit', [
-            'user' => $user,
-            'systemroles' => $systemroles,
-            'request' => $request
-        ]);
+        try {
+            $systemroles = SystemRole::all();
+            return view('admin.users.edit', [
+                'user' => $user,
+                'systemroles' => $systemroles,
+                'request' => $request
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error in edituser: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load user edit form. Please try again.');
+        }
     }
 
     public function updateuser(User $user, Request $request)
@@ -204,7 +212,8 @@ class UserController extends Controller
 
             return redirect()->route('users')->with('success', 'User Account Locked Successfully');
         } catch (QueryException $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            Log::error('Error in lockuser: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to lock user account. Please try again.']);
         }
     }
 
@@ -216,7 +225,8 @@ class UserController extends Controller
 
             return redirect()->route('users')->with('success', 'User Account Unlocked Successfully');
         } catch (QueryException $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            Log::error('Error in unlockuser: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Failed to unlock user account. Please try again.']);
         }
     }
 

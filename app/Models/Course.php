@@ -29,12 +29,21 @@ class Course extends Model
 
     public function quizzes()
     {
-        return $this->hasMany(Quiz::class);
+        return $this->hasOne(Quiz::class);
     }
 
     public function lessons()
     {
         return $this->hasMany(Lesson::class);
+    }
+
+    public function assignments() { 
+        return $this->hasMany(\App\Models\Assignment::class); 
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     

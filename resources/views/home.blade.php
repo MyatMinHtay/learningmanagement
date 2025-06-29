@@ -137,7 +137,7 @@
 
 
     <!-- Courses Start -->
-    <x-courses></x-courses>
+    {{-- <x-courses></x-courses> --}}
     <!-- Courses End -->
 
 

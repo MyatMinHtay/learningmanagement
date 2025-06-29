@@ -30,8 +30,8 @@
 
 
                 <div id="courseQuiz" class="mt-3">
-                    @if($course->quizzes->isNotEmpty())
-                        <a href="{{ route('quiz.start', ['quiz' => $course->quizzes->first()->id]) }}" class="btn btn-success">
+                    @if($course->quizzes)
+                        <a href="{{ route('quiz.start', ['quiz' => $course->quizzes->id, 'course' => $course->id]) }}" class="btn btn-success">
                             Start Course Quiz
                         </a>
                     @endif

@@ -11,21 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('quiz_attempts', function (Blueprint $table) {
+        Schema::create('assignments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('quiz_id')->constrained()->onDelete('cascade');
+            $table->foreignId('course_id')->constrained()->onDelete('cascade');
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->integer('score')->nullable();
-            $table->string('grade')->nullable();
-            $table->boolean('is_completed')->default(false);
-            $table->timestamp('started_at')->nullable();
-            $table->timestamp('ended_at')->nullable();
+            $table->json('files'); // multiple files stored as JSON array of paths
+            $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->text('remark')->nullable(); // instructor's feedback/reason
+            $table->unique(['course_id', 'student_id']);
             $table->timestamps();
         });
-
         
-        
-
     }
 
     /**
@@ -33,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('quiz_attempts');
+        Schema::dropIfExists('assignments');
     }
 };

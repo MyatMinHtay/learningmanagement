@@ -5,33 +5,40 @@ namespace App\Http\Controllers;
 use App\Models\SystemRole;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class SystemRoleController extends Controller
 {
-    public function index(){
-        $roles = SystemRole::all();
-       
-        foreach ($roles as $role) {
-            $rolearray = $role->toArray();
+    public function index()
+    {
+        try {
+            $roles = SystemRole::all();
+           
+            foreach ($roles as $role) {
+                $rolearray = $role->toArray();
 
-            $string = $rolearray['permissions'];
+                $string = $rolearray['permissions'];
 
-            $array = explode(",", $string);
-            
-            $rolearray['permissions'] = $array;
+                $array = explode(",", $string);
+                
+                $rolearray['permissions'] = $array;
 
-            $role->permissions = $array;
+                $role->permissions = $array;
+            }
+
+            $adminstrator = SystemRole::where('role', 'adminstrator')->first();
+            $allPermissions = explode(',', $adminstrator->permissions);
+               
+            return view('admin.roles.index',[
+                "roles" => $roles,
+                "allPermissions" => $allPermissions
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error in roles index: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load roles. Please try again.');
         }
-
-        $adminstrator = SystemRole::where('role', 'adminstrator')->first();
-        $allPermissions = explode(',', $adminstrator->permissions);
-        
-    
-       
-        return view('admin.roles.index',[
-            "roles" => $roles,
-            "allPermissions" => $allPermissions
-        ]);
     }
 
     public function createrole(){
@@ -52,22 +59,28 @@ class SystemRoleController extends Controller
           }
     }
 
-    public function editrole(SystemRole $role) {
-        $string = $role->permissions;
-    
-        $role->permissionsString = $string;
-        $array = explode(",", $string);
+    public function editrole(SystemRole $role)
+    {
+        try {
+            $string = $role->permissions;
+        
+            $role->permissionsString = $string;
+            $array = explode(",", $string);
 
-        $role->permissions = $array;
-    
-        $adminstrator = SystemRole::where('role', 'adminstrator')->first();
-        $allPermissions = explode(',', $adminstrator->permissions);
-    
+            $role->permissions = $array;
+        
+            $adminstrator = SystemRole::where('role', 'adminstrator')->first();
+            $allPermissions = explode(',', $adminstrator->permissions);
+        
+            return view('admin.roles.edit', [
+                'role' => $role,
+                'allPermissions' => $allPermissions
+            ]);
 
-        return view('admin.roles.edit', [
-            'role' => $role,
-            'allPermissions' => $allPermissions
-        ]);
+        } catch (Exception $e) {
+            Log::error('Error in editrole: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load role edit form. Please try again.');
+        }
     }
 
     public function updaterole(SystemRole $role, Request $request) {

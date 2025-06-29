@@ -31,17 +31,34 @@
 
                               @if (auth()->user()->role->role == 'student')
                                    <li class="nav-item">
-                                        <a class="nav-link" href="/admin/courses">
+                                        <a class="nav-link" href="{{ route('student.courses', auth()->user()->id) }}">
 
                                              <i class="fa-solid fa-c fs-5 icon"></i>
                                              Courses</a>
                                    </li>
 
                                    <li class="nav-item">
-                                        <a class="nav-link" href="/admin/assignments">
+                                        <a class="nav-link" href="{{ route('assignments.index') }}">
 
                                              <i class="fa-solid fa-a fs-5 icon"></i>
                                              Assignments</a>
+                                   </li>
+
+                                   <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('student.quizzes', auth()->user()->id) }}">
+
+                                             <i class="fa-solid fa-q fs-5 icon"></i>
+                                             Quizzes</a>
+                                   </li>
+
+                                   <li class="nav-item">
+                                        <a class="nav-link position-relative" href="{{ route('notifications.index') }}">
+                                             <i class="fas fa-bell fs-5 icon"></i>
+                                             Notifications
+                                             <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                                                  0
+                                             </span>
+                                        </a>
                                    </li>
                               @endif
 
@@ -54,7 +71,7 @@
                                    </li>
 
                                    <li class="nav-item">
-                                        <a class="nav-link" href="/admin/assignments">
+                                        <a class="nav-link" href="{{ route('assignments.index') }}">
 
                                              <i class="fa-solid fa-a fs-5 icon"></i>
                                              Assignments</a>
@@ -73,6 +90,16 @@
                                              <i class="fa-solid fa-q fs-5 icon"></i>
                                              Quizs</a>
                                    </li>
+
+                                   <li class="nav-item">
+                                        <a class="nav-link position-relative" href="{{ route('notifications.index') }}">
+                                             <i class="fas fa-bell fs-5 icon"></i>
+                                             Notifications
+                                             <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                                                  0
+                                             </span>
+                                        </a>
+                                   </li>
                               @endif
 
                               @if (auth()->user()->role->role == 'adminstrator')
@@ -87,6 +114,8 @@
                                              Users</a>
                                    </li>
                               @endif
+
+                              
 
                               <li class="nav-item">
                                    <a class="nav-link" href="/logout">
@@ -124,6 +153,31 @@
 
 <x-showerror name="error"></x-showerror>
 
-@foreach($errors->all() as $error)
-  <li>{{ $error }}</li>
-@endforeach
+<script>
+// Function to update notification count
+function updateNotificationCount() {
+    fetch('/notifications/unread-count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notification-badge');
+            if (data.count > 0) {
+                badge.textContent = data.count > 99 ? '99+' : data.count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching notification count:', error);
+        });
+}
+
+// Update count on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateNotificationCount();
+});
+
+// Update count every 30 seconds
+setInterval(updateNotificationCount, 30000);
+</script>
+

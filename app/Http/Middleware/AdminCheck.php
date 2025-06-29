@@ -40,6 +40,6 @@ class AdminCheck
         }
         
         // User doesn't have the required permission
-        return redirect('/')->with('warning', 'Unauthorized access: Missing required permission.');
+        return redirect()->back()->with('warning', 'Unauthorized access: Missing required permission.');
     }
 }

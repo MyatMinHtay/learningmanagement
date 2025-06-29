@@ -3,6 +3,14 @@
         <h4>{{ $quiz->title }}</h4>
         <p>{{ $quiz->description }}</p>
 
+        <x-error name="answers"></x-error>
+
+        <div class="col-12 text-end">
+            @if($quiz->is_time_limited)
+                <p><strong>Time Remaining:</strong> <span id="timer">{{ $quiz->total_time }}</span> minutes</p>
+            @endif
+        </div>
+
         <form action="{{ url('/quiz/' . $quiz->id . '/submit') }}" method="POST" id="quizForm">
             @csrf
             <input type="hidden" name="attempt_id" value="{{ $attemptId }}">
@@ -19,11 +27,9 @@
                         </div>
                     @endforeach
                 </div>
-            @endforeach
+            @endforeach     
 
-            @if($quiz->is_time_limited)
-                <p><strong>Time Remaining:</strong> <span id="timer">{{ $quiz->total_time }}</span> minutes</p>
-            @endif
+            
 
             <button type="submit" class="btn btn-success">Submit Quiz</button>
         </form>

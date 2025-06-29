@@ -7,19 +7,42 @@ use App\Models\Lesson;
 use App\Models\Course;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class LessonController extends Controller
 {
     public function index()
     {
-        $lessons = Lesson::with('course')->latest()->paginate(10); // eager load course relationship
-        return view('admin.lessons.index', compact('lessons'));
+        try {
+            $teacher = auth()->user();
+
+            $courseIds = Course::where('created_by', $teacher->id)->pluck('id');
+
+            $lessons = Lesson::with('course')
+                ->whereIn('course_id', $courseIds)
+                ->latest()
+                ->paginate(10);
+            
+            return view('admin.lessons.index', compact('lessons'));
+
+        } catch (Exception $e) {
+            Log::error('Error in lessons index: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load lessons. Please try again.');
+        }
     }
 
     public function create()
     {
-        $courses = Course::select('id', 'name')->get();
-        return view('admin.lessons.create', compact('courses'));
+        try {
+            $teacher = auth()->user();
+            $courses = Course::where('created_by', $teacher->id)->select('id', 'name')->get();
+            return view('admin.lessons.create', compact('courses'));
+
+        } catch (Exception $e) {
+            Log::error('Error in lesson create: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load lesson creation form. Please try again.');
+        }
     }
 
     public function store(Request $request)
@@ -32,7 +55,7 @@ class LessonController extends Controller
             'description' => 'nullable|string',
             'video'       => 'nullable|url',
             'video_file'  => 'nullable|file|mimetypes:video/mp4,video/x-msvideo,video/quicktime|max:102400', // 100MB max
-            'attachment'  => 'required|mimes:pdf|max:20480', // 10MB max
+            'attachment'  => 'nullable|mimes:pdf|max:20480', // 10MB max
             
         ]);  
 
@@ -57,8 +80,15 @@ class LessonController extends Controller
 
     public function edit(Lesson $lesson)
     {
-        $courses = Course::select('id', 'name')->get();
-        return view('admin.lessons.edit', compact('lesson', 'courses'));
+        try {
+            $teacher = auth()->user();
+            $courses = Course::where('created_by', $teacher->id)->select('id', 'name')->get();
+            return view('admin.lessons.edit', compact('lesson', 'courses'));
+
+        } catch (Exception $e) {
+            Log::error('Error in lesson edit: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load lesson edit form. Please try again.');
+        }
     }
 
     public function update(Request $request, Lesson $lesson)

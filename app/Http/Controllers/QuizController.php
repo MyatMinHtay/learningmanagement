@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Quiz;
 use App\Models\Course;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -14,26 +15,62 @@ use App\Models\Choice;
 use App\Models\QuizAnswer;
 use App\Models\QuizQuestion;
 use App\Models\QuizAttempt;
+use Illuminate\Database\QueryException;
+use Exception;
+
 
 
 class QuizController extends Controller
 {
-     public function index()
+    public function index(User $student)
     {
-        $quizzes = Quiz::with('course')->latest()->paginate(10);
-        return view('admin.quiz.index', compact('quizzes'));
+        try {
+            $quizzes = Quiz::whereHas('attempts', function ($query) use ($student) {
+                $query->where('student_id', $student->id);
+            })
+            ->with('course')
+            ->latest()
+            ->paginate(10);
+
+            return view('admin.student.quizzes', compact('quizzes', 'student'));
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz index: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load quizzes. Please try again.');
+        }
     }
+
 
     public function adminindex()
     {
-        $quizzes = Quiz::with('course')->latest()->paginate(10);
-        return view('admin.quiz.index', compact('quizzes'));
+        try {
+            $teacher = auth()->user();
+
+            $quizzes = Quiz::with(['course', 'course.creator'])
+                ->where('created_by', $teacher->id)
+                ->latest()
+                ->paginate(10);
+
+            return view('admin.quiz.index', compact('quizzes'));
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz adminindex: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load quizzes. Please try again.');
+        }
     }
+
 
     public function create()
     {
-        $courses = Course::all();
-        return view('admin.quiz.create', compact('courses'));
+        try {
+            $teacher = auth()->user();
+            $courses = Course::where('created_by', $teacher->id)->get();
+            return view('admin.quiz.create', compact('courses'));
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz create: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load quiz creation form. Please try again.');
+        }
     }
 
     public function store(Request $request)
@@ -102,6 +139,13 @@ class QuizController extends Controller
             return redirect()->route('quizzes.index')->with('success', 'Quiz with questions created.');
         } catch (\Exception $e) {
             DB::rollBack();
+
+            if ($e instanceof QueryException && ($e->errorInfo[1] ?? null) === 1062) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['error' => 'A quiz already exists for the selected course. Please edit the existing quiz instead.']);
+            }
+            
             
 
             return redirect()->back()
@@ -112,8 +156,14 @@ class QuizController extends Controller
 
     public function edit(Quiz $quiz)
     {
-        $courses = Course::all(); 
-        return view('admin.quiz.edit', compact('quiz', 'courses'));
+        try {
+            $courses = Course::all(); 
+            return view('admin.quiz.edit', compact('quiz', 'courses'));
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz edit: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load quiz edit form. Please try again.');
+        }
     }
 
     public function update(Request $request, Quiz $quiz)
@@ -183,111 +233,202 @@ class QuizController extends Controller
 
     public function destroy(Quiz $quiz)
     {
-        $quiz->delete();
-        return redirect()->route('quizzes.index')->with('success', 'Quiz deleted successfully.');
+        try {
+            $quiz->delete();
+            return redirect()->route('quizzes.index')->with('success', 'Quiz deleted successfully.');
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz destroy: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to delete quiz. Please try again.');
+        }
     }
 
 
-    public function start(Quiz $quiz)
-{
-    $student = auth()->user();
+    public function start(Course $course,Quiz $quiz)
+    {
+        try {
+            $student = auth()->user();
 
-    // Check enrollment
-    if (!DB::table('course_students')->where('course_id', $quiz->course_id)->where('student_id', $student->id)->exists()) {
-        return back()->with('danger', 'You are not enrolled in this course.');
+            if ($student->role->role != 'student') {
+                return redirect()->back()->with('danger', 'Only students can attempt quizzes.');
+            }
 
-        
+            // Check enrollment
+            if (!DB::table('course_students')->where('course_id', $course->id)->where('student_id', $student->id)->exists()) {
+                return redirect()->back()->with('danger', 'You are not enrolled in this course.');
+            }
+
+            // Check if already attempted
+            $attempt = DB::table('quiz_attempts')
+                ->where('quiz_id', $quiz->id)
+                ->where('student_id', $student->id)
+                ->first();
+
+            if ($attempt && $attempt->is_completed) {
+                return redirect()->back()->with('danger','You have already completed this quiz.');
+            }
+
+            // Check if the course's quiz matches the provided quiz
+            if (!$course->quizzes || $course->quizzes->id !== $quiz->id) {
+                return redirect()->back()->with('danger', 'This quiz does not belong to the selected course.');
+            }
+
+            // Start or resume attempt
+            if (!$attempt) {
+                $attemptId = DB::table('quiz_attempts')->insertGetId([
+                    'quiz_id' => $quiz->id,
+                    'student_id' => $student->id,
+                    'started_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            } else {
+                $attemptId = $attempt->id;
+            }
+
+            $quiz->load('questions.choices');
+
+            return view('quizzes.start', compact('quiz', 'attemptId'));
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz start: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to start quiz. Please try again.');
+        }
     }
-
-    // Check if already attempted
-    $attempt = DB::table('quiz_attempts')
-        ->where('quiz_id', $quiz->id)
-        ->where('student_id', $student->id)
-        ->first();
-
-    if ($attempt && $attempt->is_completed) {
-        return redirect()->back()->with([
-            'error' => 'You have already completed this quiz.']);
-    }
-
-    // Start or resume attempt
-    if (!$attempt) {
-        $attemptId = DB::table('quiz_attempts')->insertGetId([
-            'quiz_id' => $quiz->id,
-            'student_id' => $student->id,
-            'started_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-    } else {
-        $attemptId = $attempt->id;
-    }
-
-    $quiz->load('questions.choices');
-
-    return view('quizzes.start', compact('quiz', 'attemptId'));
-}
 
 
     public function submit(Request $request, Quiz $quiz)
     {
-        $request->validate([
-            'attempt_id' => 'required|exists:quiz_attempts,id',
-            'answers' => 'required|array',
-        ]);
+        try {
+            $request->validate([
+                'attempt_id' => 'required|exists:quiz_attempts,id',
+                'answers' => 'nullable|array',
+            ],[
+                'answers.required' => 'Please provide the answers.',
+            ]);
 
-        $attempt = QuizAttempt::where('id', $request->attempt_id)
-            ->where('quiz_id', $quiz->id)
-            ->where('student_id', auth()->id())
-            ->firstOrFail();
+            $attempt = QuizAttempt::where('id', $request->attempt_id)
+                ->where('quiz_id', $quiz->id)
+                ->where('student_id', auth()->id())
+                ->firstOrFail();
 
-        // Prevent re-submission
-        if ($attempt->is_completed) {
-            return redirect()->back()->with('error', 'Quiz already submitted.');
-        }
+            // Prevent re-submission
+            if ($attempt->is_completed) {
+                return redirect()->back()->with('error', 'Quiz already submitted.');
+            }
 
-        $score = 0;
-        $total = $quiz->questions->count();
+            $score = 0;
+            $total = $quiz->questions->count();
 
-        foreach ($quiz->questions as $question) {
-            $selectedChoiceId = $request->input("answers.{$question->id}");
+           
 
-            if ($selectedChoiceId) {
-                // Save the answer
-                QuizAnswer::create([
-                    'quiz_attempt_id' => $attempt->id,
-                    'question_id' => $question->id,
-                    'choice_id' => $selectedChoiceId,
-                ]);
+            
 
-                // Compare with correct choice
-                $correctChoice = $question->choices()->where('is_correct', true)->first();
-                if ($correctChoice && $correctChoice->id == $selectedChoiceId) {
-                    $score++;
+            foreach ($quiz->questions as $question) {
+                $selectedChoiceId = $request->input("answers.{$question->id}");
+
+                if ($selectedChoiceId) {
+                    QuizAnswer::create([
+                        'quiz_attempt_id' => $attempt->id,
+                        'question_id' => $question->id,
+                        'choice_id' => $selectedChoiceId,
+                    ]);
+
+                    $correctChoice = $question->choices()->where('is_correct', true)->first();
+                    if ($correctChoice && $correctChoice->id == $selectedChoiceId) {
+                        $score++;
+                    }
                 }
             }
+
+            $percentage = $total > 0 ? ($score / $total) * 100 : 0;
+            $grade = '';
+
+            
+
+           
+
+            if ($percentage < 50) {
+                $grade = 'Normal';
+                $message = 'You need to work harder to improve your score.';
+                $status = 'danger';
+            } elseif ($percentage < 80) {
+                $grade = 'Good';
+                $message = 'You did well, but there is room for improvement.';
+                $status = 'warning';
+            } else {
+                $grade = 'Excellent';
+                $message = 'You are doing great! Keep up the good work.';
+                $status = 'success';
+            }
+
+         
+
+            // Finalize attempt
+            $attempt->update([
+                'score' => $score,
+                'is_completed' => true,
+                'ended_at' => now(),
+                'grade' => $grade,
+            ]);
+
+            return redirect()->route('quiz.result', $quiz->id)->with($status, $message);
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz submit: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to submit quiz. Please try again.');
         }
-
-        // Finalize attempt
-        $attempt->update([
-            'score' => $score,
-            'is_completed' => true,
-            'ended_at' => now(),
-        ]);
-
-        return redirect()->route('quiz.result', $quiz->id)->with('success', 'Quiz submitted successfully.');
     }
 
     public function result(Quiz $quiz)
     {
-        $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question.choices'])
-            ->where('quiz_id', $quiz->id)
-            ->where('student_id', auth()->id())
-            ->where('is_completed', true)
-            ->latest('ended_at')
-            ->firstOrFail();
+        try {
+            $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question.choices'])
+                ->where('quiz_id', $quiz->id)
+                ->where('student_id', auth()->id())
+                ->where('is_completed', true)
+                ->latest('ended_at')
+                ->first();
 
-        return view('quizzes.result', compact('quiz', 'attempt'));
+            if (!$attempt) {
+                return redirect()->route('student.quizzes', ['student' => auth()->id()])->withErrors(['error' => 'You have not attempted this quiz.']);
+            }
+
+            return view('quizzes.result', compact('quiz', 'attempt'));
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz result: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load quiz result. Please try again.');
+        }
+    }
+
+    public function adminresult(Quiz $quiz)
+    {
+        try {
+            $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question.choices'])
+                ->where('quiz_id', $quiz->id)
+                ->where('student_id', auth()->id())
+                ->where('is_completed', true)
+                ->latest('ended_at')
+                ->firstOrFail();
+
+            return view('admin.student.result', compact('quiz', 'attempt'));
+
+        } catch (Exception $e) {
+            Log::error('Error in quiz adminresult: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load quiz results. Please try again.');
+        }
+    }
+
+    public function showStudentQuizzes(){
+        try {
+            $quizzes = Quiz::with('course')->latest()->paginate(10);
+            return view('admin.student.quizzes.index', compact('quizzes'));
+
+        } catch (Exception $e) {
+            Log::error('Error in showStudentQuizzes: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load student quizzes. Please try again.');
+        }
     }
 
 

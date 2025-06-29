@@ -1,5 +1,8 @@
-<x-layout>
+<x-adminlayout>
     <div class="container mt-5">
+        <div class="col-12 d-flex justify-content-start my-5">
+            <a href="{{ route('student.quizzes', auth()->user()->id) }}" class="btn btn-success"><i class="fa-solid fa-arrow-left"></i>Back</a>
+        </div>
         <h3>{{ $quiz->title }} - Result</h3>
         <h4>Your Grade: {{ $attempt->grade }}</h4>
         <p><strong>Your Score:</strong> {{ $attempt->score }} / {{ $quiz->questions->count() }}</p>
@@ -32,4 +35,4 @@
 
         {{-- <a href="{{ route('showlesson' , ['quiz' => $quiz->id]) }}" class="btn btn-primary">Back to Dashboard</a> --}}
     </div>
-</x-layout>
+</x-adminlayout>

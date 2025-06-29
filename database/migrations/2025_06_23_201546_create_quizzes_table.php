@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
             $table->string('title')->nullable();
+            $table->unique('course_id');
             $table->text('description')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade')->default(1);
             $table->integer('total_marks')->default(0);
