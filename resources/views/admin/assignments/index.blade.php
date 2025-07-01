@@ -16,6 +16,7 @@
                         <th>Student</th>
                         <th>Files</th>
                         <th>Status</th>
+                        <th>Mark</th>
                         <th>Remark</th>
                         @if(in_array('students', explode(',', auth()->user()->role->permissions)) || in_array('teachers', explode(',', auth()->user()->role->permissions)))
                             <th>Actions</th>
@@ -44,6 +45,7 @@
                                     <span class="badge bg-secondary">Pending</span>
                                 @endif
                             </td>
+                            <td>{{ $assignment->mark ?? '—' }}</td>
                             <td>{{ $assignment->remark ?? '—' }}</td>
                             @if(in_array('students', explode(',', auth()->user()->role->permissions)) || in_array('teachers', explode(',', auth()->user()->role->permissions)) || in_array('all', explode(',', auth()->user()->role->permissions)))
                                 <td>
@@ -55,12 +57,41 @@
                                     {{-- Actions for Teachers: Show Accept/Reject buttons when assignment is pending --}}
                                     @if(in_array('teachers', explode(',', auth()->user()->role->permissions)) || in_array('all', explode(',', auth()->user()->role->permissions)))
                                         @if($assignment->status === 'pending')
-                                            <form method="POST" action="{{ route('assignments.updateStatus', $assignment->id) }}" class="d-inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="accepted">
-                                                <button type="submit" class="btn btn-success btn-sm">Accept</button>
-                                            </form>
+                                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#acceptModal-{{ $assignment->id }}">
+                                            Accept
+                                        </button>
+
+                                        <!-- Accept Modal -->
+                                        <div class="modal fade" id="acceptModal-{{ $assignment->id }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form method="POST" action="{{ route('assignments.updateStatus', $assignment->id) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Accept Assignment</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <input type="hidden" name="status" value="accepted">
+                                                            <div class="mb-3">
+                                                                <label for="mark-{{ $assignment->id }}" class="form-label">Mark (0-100):</label>
+                                                                <input type="number" name="mark" id="mark-{{ $assignment->id }}" class="form-control" min="0" max="100" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="remark-{{ $assignment->id }}" class="form-label">Remark (optional):</label>
+                                                                <textarea name="remark" id="remark-{{ $assignment->id }}" class="form-control" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="submit" class="btn btn-success">Accept</button>
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
             
                                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal-{{ $assignment->id }}">
                                                 Reject
@@ -107,7 +138,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="@if(in_array('students', explode(',', auth()->user()->role->permissions)) || in_array('teachers', explode(',', auth()->user()->role->permissions)) || in_array('all', explode(',', auth()->user()->role->permissions))) 7 @else 6 @endif" class="text-center">No assignments found.</td>
+                            <td colspan="@if(in_array('students', explode(',', auth()->user()->role->permissions)) || in_array('teachers', explode(',', auth()->user()->role->permissions)) || in_array('all', explode(',', auth()->user()->role->permissions))) 8 @else 7 @endif" class="text-center">No assignments found.</td>
                         </tr>
                     @endforelse
                 </tbody>

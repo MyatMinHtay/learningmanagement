@@ -50,7 +50,7 @@
                                 <x-error name="email"></x-error>
                             </div>
 
-                             <div class="form-group mb-3 permissions my-2">
+                             {{-- <div class="form-group mb-3 permissions my-2">
                                 <label for="role_id">Select Role</label>
                                 <select name="role_id" id="role_id" class="form-control" required>
                                     <option value="">-- Choose a role --</option>
@@ -61,7 +61,7 @@
                                     @endforelse
                                 </select>
                                 <x-error name="role_id"></x-error>
-                            </div>
+                            </div> --}}
 
 
 

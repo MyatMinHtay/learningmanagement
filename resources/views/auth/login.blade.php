@@ -30,11 +30,18 @@
                             <x-error name="password"></x-error>
 
 
-                            <div class="form-check col-6 me-auto my-1">
-                                <input class="form-check-input" type="checkbox" value="1" name="remember" class=" "  id="flexCheckChecked" checked>
+                            <div class="form-check col-12 me-auto my-1 d-flex justify-content-between">
+                                <div>
+                                  <input class="form-check-input" type="checkbox" value="1" name="remember" class=" "  id="flexCheckChecked" checked>
                                 <label class="form-check-label" for="flexCheckChecked">
                                 Remember me
                                 </label>
+                                </div>
+
+                                <div class="d-flex align-items-center">
+                                  <p class="my-0 me-2">Don't have an account?</p>
+                                  <a href="{{ route('register') }}" class="text-decoration-none">Register</a>
+                                </div>
 
                             </div>
 

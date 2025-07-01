@@ -67,6 +67,12 @@
         return false;
     });
 
+    $('.course-title').matchHeight({
+        property: 'height',
+        target: null,
+        remove: false
+    });
+
 
     // Header carousel
     $(".header-carousel").owlCarousel({

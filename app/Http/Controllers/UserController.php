@@ -81,7 +81,7 @@ class UserController extends Controller
                 // Require at least one lowercase letter, one uppercase letter, one number, and one special character from @$!%*?&
             ],
             'userphoto' => ['nullable', 'image', 'mimes:jpeg,png,jpg,svg', 'max:2048'],
-            'role_id' => ['required']
+            'role_id' => ['nullable']
 
         ], [
             'email.required' => 'we need your email address',
@@ -111,7 +111,7 @@ class UserController extends Controller
         try {
             $user = User::create($formData);
 
-            return redirect()->route('users')->with('success', 'User ' . $user->username . '  Account Created Successfully ');
+            return redirect()->route('login')->with('success', 'User ' . $user->username . '  Account Created Successfully ');
         } catch (QueryException $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }

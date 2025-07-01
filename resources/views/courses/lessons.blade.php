@@ -17,9 +17,8 @@
                     </div>
                     <div id="lessonAttachment">
                         @if($first->attachment)
-                            <a href="{{ asset($first->attachment) }}" class="btn btn-outline-primary" download>
-                                Download Attachment
-                            </a>
+                           
+                            <a href="{{ asset('storage/' . $first->attachment) }}" download class="btn btn-outline-primary" target="_blank">Download Attachment</a>
                         @endif
                     </div>
                 @else

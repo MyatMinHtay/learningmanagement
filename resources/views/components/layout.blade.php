@@ -54,6 +54,13 @@
     <script src="{{asset('/assets/lib/owlcarousel/owl.carousel.min.js')}}"></script>
     {{-- jquery ui css 1 js1 --}}
     <script src="{{ asset('/assets/js/jquery-ui.min.js') }}" type="text/javascript"></script>
+
+    {{-- jquery match Height  --}}
+    <script src="{{ asset('/assets/js/jquery.matchHeight.js') }}" type="text/javascript"></script>
+
+    
+
+
     <!-- Custom Javascript -->
     <script src="{{asset('/assets/js/main.js')}}"></script>
 </body>

@@ -25,20 +25,23 @@
                 <a href="/contact" class="nav-item nav-link">Contact</a>
                 @auth
                     <!-- Notifications Bell -->
-                    <a href="{{ route('notifications.index') }}" class="nav-item nav-link position-relative">
-                        <i class="fas fa-bell"></i>
-                        <span id="user-notification-badge" class="position-absolute badge badge-danger rounded-pill" style="display: none; font-size: 0.6rem; top: 8px; right: 8px;">
-                            0
-                        </span>
-                    </a>
+                    @if (
+                       auth()->user()->role->role == 'student' || auth()->user()->role->role == 'teacher'
+                    )
+                        <a href="{{ route('notifications.index') }}" class="nav-item nav-link position-relative">
+                            <i class="fas fa-bell"></i>
+                            <span id="user-notification-badge" class="position-absolute badge badge-danger rounded-pill" style="display: none; font-size: 0.6rem; top: 8px; right: 8px;">
+                                0
+                            </span>
+                        </a>
+                    @endif
+
                     
                     <div class="nav-item dropdown show">
                         <a href="/" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">{{Auth::user()->username}}</a>
                         <div class="dropdown-menu fade-down m-0 show">
                             <a href="/profile/{{auth()->user()->username}}" class="dropdown-item">Profile</a>
-                            <a href="{{ route('notifications.index') }}" class="dropdown-item">
-                                <i class="fas fa-bell me-2"></i>Notifications
-                            </a>
+                            
                             <a href="/admin/dashboard" class="dropdown-item">Dashboard</a>
                             <a href="/logout" class="dropdown-item">Logout</a>
                             
@@ -77,11 +80,16 @@
     @auth
     <script>
     // Function to update notification count for regular users
+    const badge = document.getElementById('user-notification-badge');
+
+    
     function updateUserNotificationCount() {
         fetch('/notifications/unread-count')
             .then(response => response.json())
             .then(data => {
-                const badge = document.getElementById('user-notification-badge');
+
+                
+                
                 if (data.count > 0) {
                     badge.textContent = data.count > 99 ? '99+' : data.count;
                     badge.style.display = 'inline';
@@ -96,11 +104,16 @@
 
     // Update count on page load
     document.addEventListener('DOMContentLoaded', function() {
-        updateUserNotificationCount();
+        if (badge) {
+            updateUserNotificationCount();
+        }
     });
 
     // Update count every 30 seconds
-    setInterval(updateUserNotificationCount, 30000);
+    if (badge) {
+        setInterval(updateUserNotificationCount, 30000);
+    }
+    
     </script>
     @endauth
     </div>

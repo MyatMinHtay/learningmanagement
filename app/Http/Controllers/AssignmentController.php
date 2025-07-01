@@ -135,12 +135,14 @@ class AssignmentController extends Controller
             // Validate input
             $request->validate([
                 'status' => 'required|in:accepted,rejected',
+                'mark' => 'nullable|numeric|min:0|max:100',
                 'remark' => 'nullable|string|max:1000',
             ]);
 
             // Update assignment status and remark
             $assignment->update([
                 'status' => $request->status,
+                'mark' => $request->mark,
                 'remark' => $request->remark,
             ]);
 

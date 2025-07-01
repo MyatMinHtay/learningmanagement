@@ -15,6 +15,7 @@ class Assignment extends Model
         'files',
         'status',
         'remark',
+        'mark',
     ];
 
     public function course() { 

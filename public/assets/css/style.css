@@ -478,7 +478,7 @@
     flex-wrap: wrap;
     justify-content: start;
     align-items: center;
-    gap: 50px;
+    gap: 24px;
     margin: 0 auto;
 }
 
@@ -510,7 +510,7 @@
 
 .course-title {
     margin-top: 20px;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     color: var(--light);
 }
 
@@ -604,5 +604,9 @@
     border-radius: 5px;
     font-size: 1.2rem;
     border: none;
+}
+
+.badge{
+    background: red;
 }
 /* End Show Course CSS  */
