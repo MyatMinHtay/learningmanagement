@@ -52,6 +52,16 @@
                                    </li>
 
                                    <li class="nav-item">
+                                        <a class="nav-link position-relative" href="{{ route('chat.index') }}">
+                                             <i class="fas fa-comments fs-5 icon"></i>
+                                             Chat
+                                             <span id="admin-chat-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                                                  0
+                                             </span>
+                                        </a>
+                                   </li>
+
+                                   <li class="nav-item">
                                         <a class="nav-link position-relative" href="{{ route('notifications.index') }}">
                                              <i class="fas fa-bell fs-5 icon"></i>
                                              Notifications
@@ -89,6 +99,16 @@
 
                                              <i class="fa-solid fa-q fs-5 icon"></i>
                                              Quizs</a>
+                                   </li>
+
+                                   <li class="nav-item">
+                                        <a class="nav-link position-relative" href="{{ route('chat.index') }}">
+                                             <i class="fas fa-comments fs-5 icon"></i>
+                                             Chat
+                                             <span id="admin-chat-badge-teacher" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                                                  0
+                                             </span>
+                                        </a>
                                    </li>
 
                                    <li class="nav-item">
@@ -172,12 +192,34 @@ function updateNotificationCount() {
         });
 }
 
+// Function to update chat unread count
+function updateChatUnreadCount() {
+    const chatBadge = document.getElementById('admin-chat-badge') || document.getElementById('admin-chat-badge-teacher');
+    if (chatBadge) {
+        fetch('/chat/unread-count')
+            .then(response => response.json())
+            .then(data => {
+                if (data.count > 0) {
+                    chatBadge.textContent = data.count > 99 ? '99+' : data.count;
+                    chatBadge.style.display = 'inline';
+                } else {
+                    chatBadge.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching chat unread count:', error);
+            });
+    }
+}
+
 // Update count on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateNotificationCount();
+    updateChatUnreadCount();
 });
 
 // Update count every 30 seconds
 setInterval(updateNotificationCount, 30000);
+setInterval(updateChatUnreadCount, 30000);
 </script>
 

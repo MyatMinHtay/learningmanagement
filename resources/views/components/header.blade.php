@@ -24,6 +24,18 @@
              
                 <a href="/contact" class="nav-item nav-link">Contact</a>
                 @auth
+                    <!-- Chat Link -->
+                    @if (
+                       auth()->user()->role->role == 'student' || auth()->user()->role->role == 'teacher'
+                    )
+                        <a href="{{ route('chat.index') }}" class="nav-item nav-link position-relative" title="Chat">
+                            <i class="fas fa-comments"></i>
+                            <span id="chat-notification-badge" class="position-absolute badge badge-danger rounded-pill" style="display: none; font-size: 0.6rem; top: 8px; right: 8px;">
+                                0
+                            </span>
+                        </a>
+                    @endif
+
                     <!-- Notifications Bell -->
                     @if (
                        auth()->user()->role->role == 'student' || auth()->user()->role->role == 'teacher'
@@ -81,6 +93,7 @@
     <script>
     // Function to update notification count for regular users
     const badge = document.getElementById('user-notification-badge');
+    const chatBadge = document.getElementById('chat-notification-badge');
 
     
     function updateUserNotificationCount() {
@@ -102,16 +115,41 @@
             });
     }
 
+    // Function to update chat unread count
+    function updateChatUnreadCount() {
+        if (chatBadge) {
+            fetch('/chat/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        chatBadge.textContent = data.count > 99 ? '99+' : data.count;
+                        chatBadge.style.display = 'inline';
+                    } else {
+                        chatBadge.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching chat unread count:', error);
+                });
+        }
+    }
+
     // Update count on page load
     document.addEventListener('DOMContentLoaded', function() {
         if (badge) {
             updateUserNotificationCount();
+        }
+        if (chatBadge) {
+            updateChatUnreadCount();
         }
     });
 
     // Update count every 30 seconds
     if (badge) {
         setInterval(updateUserNotificationCount, 30000);
+    }
+    if (chatBadge) {
+        setInterval(updateChatUnreadCount, 30000);
     }
     
     </script>

@@ -14,7 +14,8 @@ class Course extends Model
         'image',
         'description',
         'created_by',
-        'duration'
+        'duration',
+        'category_id'
     ];
 
     public function students()
@@ -46,6 +47,9 @@ class Course extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    
+    public function category()
+    {
+        return $this->belongsTo(CourseCategory::class, 'category_id');
+    }
 
 }

@@ -9,11 +9,13 @@ use App\Http\Controllers\{
     SystemRoleController,
     GlobalSearchController,
     CourseController,
+    CourseCategoryController,
     LessonController,
     QuizController,
     ForgotPasswordController,
     AssignmentController,
-    NotificationController
+    NotificationController,
+    ChatController
 };
 
 // ========================================
@@ -96,6 +98,18 @@ Route::prefix('admin/courses')->middleware('admincheck:teachers')->group(functio
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
 });
 
+// ========================================
+// Course Categories (Admin)
+// ========================================
+Route::prefix('admin/categories')->middleware('admincheck:teachers')->group(function () {
+    Route::get('/', [CourseCategoryController::class, 'index'])->name('categories.index');
+    Route::get('/create', [CourseCategoryController::class, 'create'])->name('categories.create');
+    Route::post('/', [CourseCategoryController::class, 'store'])->name('categories.store');
+    Route::get('/{category}/edit', [CourseCategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/{category}', [CourseCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/{category}', [CourseCategoryController::class, 'destroy'])->name('categories.destroy');
+});
+
 
 // ========================================
 // Lessons (Admin)
@@ -169,4 +183,15 @@ Route::middleware('auth')->group(function () {
     // For teachers to create deadline notifications
     Route::get('/notifications/create-deadline', [NotificationController::class, 'createDeadlineForm'])->name('notifications.create-deadline');
     Route::post('/notifications/create-deadline', [NotificationController::class, 'storeDeadlineNotification'])->name('notifications.store-deadline');
+});
+
+// ========================================
+// Chat
+// ========================================
+Route::middleware('auth')->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{course}/{user}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
+    Route::get('/chat/{course}/{user}/messages', [ChatController::class, 'loadMessages'])->name('chat.messages');
+    Route::get('/chat/unread-count', [ChatController::class, 'getUnreadCount'])->name('chat.unread-count');
 });

@@ -29,6 +29,19 @@
                 </div>
 
                 <div class="mb-4">
+                    <label for="category_id">Category</label>
+                    <select name="category_id" class="form-control inputbox">
+                        <option value="">Select a category (optional)</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ old('category_id', $course->category_id) == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <x-error name="category_id" />
+                </div>
+
+                <div class="mb-4">
                     <label for="image">Course Image</label>
                     <input type="file" class="form-control inputbox" name="image">
                     <x-error name="image" />

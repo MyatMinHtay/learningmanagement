@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\CourseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -18,13 +19,23 @@ use Exception;
 
 class CourseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $courses = Course::latest()->paginate(10);
+            $query = Course::with(['category', 'students']);
+            
+            // Filter by category if provided
+            if ($request->has('category') && $request->category != '') {
+                $query->where('category_id', $request->category);
+            }
+            
+            $courses = $query->latest()->paginate(10);
+            $categories = CourseCategory::ordered()->get();
             
             return view('courses',[
-                'courses' => $courses
+                'courses' => $courses,
+                'categories' => $categories,
+                'selectedCategory' => $request->category
             ]);
 
         } catch (Exception $e) {
@@ -46,13 +57,21 @@ class CourseController extends Controller
         }
     }
 
-    public function adminindex()
+    public function adminindex(Request $request)
     {
         try {
             $teacher = auth()->user();
-            $courses = Course::where('created_by', $teacher->id)->latest()->paginate(10);
+            $query = Course::with('category')->where('created_by', $teacher->id);
+            
+            // Filter by category if provided
+            if ($request->has('category') && $request->category != '') {
+                $query->where('category_id', $request->category);
+            }
+            
+            $courses = $query->latest()->paginate(10);
+            $categories = CourseCategory::ordered()->get();
 
-            return view('admin.courses.index', compact('courses'));
+            return view('admin.courses.index', compact('courses', 'categories'));
 
         } catch (Exception $e) {
             Log::error('Error in admin courses index: ' . $e->getMessage());
@@ -63,7 +82,8 @@ class CourseController extends Controller
     public function create()
     {
         try {
-            return view('admin.courses.create');
+            $categories = CourseCategory::ordered()->get();
+            return view('admin.courses.create', compact('categories'));
 
         } catch (Exception $e) {
             Log::error('Error in course create: ' . $e->getMessage());
@@ -73,11 +93,10 @@ class CourseController extends Controller
 
     public function store(Request $request)
     {
-
-        
         
         $formData = $request->validate([
             'name' => 'required|string|max:255',
+            'category_id' => 'nullable|exists:course_categories,id',
             'image' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
             'description' => 'nullable|string',
             'duration' => 'nullable|integer',
@@ -136,8 +155,10 @@ class CourseController extends Controller
             $course->load(['modules' => function ($query) {
                 $query->orderBy('order');
             }]);
+            
+            $categories = CourseCategory::ordered()->get();
 
-            return view('admin.courses.edit', compact('course'));
+            return view('admin.courses.edit', compact('course', 'categories'));
 
         } catch (Exception $e) {
             Log::error('Error in course edit: ' . $e->getMessage());
@@ -150,6 +171,7 @@ class CourseController extends Controller
     {
         $formData = $request->validate([
             'name' => 'required|string|max:255',
+            'category_id' => 'nullable|exists:course_categories,id',
             'image' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
             'description' => 'nullable|string',
             'duration' => 'nullable|integer',

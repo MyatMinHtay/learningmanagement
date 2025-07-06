@@ -19,6 +19,19 @@
                     <x-error name="image" />
                 </div>
 
+                <div class="col-md-6">
+                    <label for="category_id">Category</label>
+                    <select name="category_id" class="form-control">
+                        <option value="">Select a category (optional)</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <x-error name="category_id" />
+                </div>
+
                 <div class="col-md-12">
                     <label for="description">Description</label>
                     <textarea name="description" id="course_description" rows="3" class="form-control"></textarea>
