@@ -63,6 +63,10 @@ class AssignmentController extends Controller
         }
     }
 
+    /**
+     * Handle student assignment submission with file uploads and enrollment validation
+     * Validates enrollment, processes multiple file uploads, creates assignment record, notifies teacher
+     */
     public function store(Request $request)
     {
         try {
@@ -75,7 +79,7 @@ class AssignmentController extends Controller
 
             $student = auth()->user();
 
-            // Optional: confirm student is actually enrolled in this course
+            // Verify student is actually enrolled in the selected course
             $isEnrolled = \DB::table('course_students')
                 ->where('course_id', $request->course_id)
                 ->where('student_id', $student->id)
@@ -85,11 +89,13 @@ class AssignmentController extends Controller
                 return redirect()->back()->with('error', 'You are not enrolled in the selected course.');
             }
 
+            // Process and store multiple assignment files securely
             $paths = [];
             foreach ($request->file('files') as $file) {
                 $paths[] = $file->store("assignments/{$request->course_id}", 'public');
             }
 
+            // Create assignment record with pending status
             $assignment = Assignment::create([
                 'course_id' => $request->course_id,
                 'student_id' => $student->id,
@@ -98,7 +104,7 @@ class AssignmentController extends Controller
                 'remark' => $request->note,
             ]);
 
-            // Create notification for course creator
+            // Notify course teacher about new assignment submission
             $course = Course::find($request->course_id);
             if ($course && $course->created_by) {
                 Notification::createAssignmentSubmissionNotification(
@@ -117,29 +123,33 @@ class AssignmentController extends Controller
         }
     }
 
+    /**
+     * Update assignment status and grade by authorized teacher
+     * Validates teacher authorization, updates assignment status, assigns marks and feedback
+     */
     public function updateStatus(Request $request, Assignment $assignment)
     {
         try {
             $user = auth()->user();
 
-            // Optional: check if user is instructor of the course linked to the assignment
+            // Verify user is a teacher with proper role
             if ($user->role->role !== 'teacher') {
                 return redirect()->back()->with('warning', 'Only teacher can update assignment status.');
             }
 
-            // Ensure this instructor created the course
+            // Ensure only the course creator can review assignments for their course
             if ($assignment->course->created_by !== $user->id) {
                 return redirect()->back()->with('warning', 'You are not authorized to review this assignment.');
             }
 
-            // Validate input
+            // Validate status update data
             $request->validate([
                 'status' => 'required|in:accepted,rejected',
                 'mark' => 'nullable|numeric|min:0|max:100',
                 'remark' => 'nullable|string|max:1000',
             ]);
 
-            // Update assignment status and remark
+            // Update assignment with teacher's evaluation
             $assignment->update([
                 'status' => $request->status,
                 'mark' => $request->mark,
@@ -165,6 +175,10 @@ class AssignmentController extends Controller
         }
     }
 
+    /**
+     * Update assignment files and reset status to pending
+     * Handles file replacement, deletes old files, resets assignment to pending status
+     */
     public function update(Request $request, Assignment $assignment)
     {
         try {
@@ -174,15 +188,15 @@ class AssignmentController extends Controller
                 'note' => 'nullable|string|max:1000',
             ]);
 
-            // If new files are uploaded, delete old files first
+            // Replace assignment files if new ones are uploaded
             if ($request->hasFile('files')) {
-                // Delete existing files
+                // Delete existing assignment files from storage
                 $existingFiles = json_decode($assignment->files, true) ?? [];
                 foreach ($existingFiles as $file) {
                     \Storage::disk('public')->delete($file);
                 }
 
-                // Store new files
+                // Store new assignment files
                 $paths = [];
                 foreach ($request->file('files') as $file) {
                     $paths[] = $file->store("assignments/{$assignment->course_id}", 'public');
@@ -192,7 +206,7 @@ class AssignmentController extends Controller
                 $assignment->files = json_encode($paths);
             }
 
-            // Update other fields
+            // Update assignment note and reset status for re-evaluation
             $assignment->remark = $request->note;
             $assignment->status = 'pending'; // Reset status when updated
             $assignment->save();

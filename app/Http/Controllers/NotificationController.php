@@ -27,9 +27,14 @@ class NotificationController extends Controller
         }
     }
 
+    /**
+     * Mark a specific notification as read for the authenticated user
+     * Validates ownership and updates notification read status with timestamp
+     */
     public function markAsRead($id)
     {
         try {
+            // Ensure user can only mark their own notifications as read
             $notification = Notification::where('id', $id)
                 ->where('recipient_id', auth()->id())
                 ->firstOrFail();
@@ -44,9 +49,14 @@ class NotificationController extends Controller
         }
     }
 
+    /**
+     * Mark all unread notifications as read for the authenticated user
+     * Bulk updates all unread notifications with read timestamp
+     */
     public function markAllAsRead()
     {
         try {
+            // Update all unread notifications for current user
             Notification::forUser(auth()->id())
                 ->unread()
                 ->update([
@@ -62,6 +72,10 @@ class NotificationController extends Controller
         }
     }
 
+    /**
+     * Get unread notification count for authenticated user via AJAX
+     * Returns JSON response with current unread notification count
+     */
     public function getUnreadCount()
     {
         try {
@@ -89,6 +103,10 @@ class NotificationController extends Controller
         }
     }
 
+    /**
+     * Create deadline notifications for all students in a course
+     * Validates course ownership, gets enrolled students, creates batch notifications
+     */
     public function storeDeadlineNotification(Request $request)
     {
         try {
@@ -102,19 +120,19 @@ class NotificationController extends Controller
 
             $course = Course::findOrFail($request->course_id);
             
-            // Check if user is course creator
+            // Verify teacher owns the course before creating notifications
             if ($course->created_by !== auth()->id()) {
                 return redirect()->back()->with('error', 'You can only create notifications for your own courses');
             }
 
-            // Get all enrolled students
+            // Get all students enrolled in this course
             $studentIds = $course->students()->pluck('users.id')->toArray();
 
             if (empty($studentIds)) {
                 return redirect()->back()->with('warning', 'No students enrolled in this course');
             }
 
-            // Create notifications for all enrolled students
+            // Create deadline notifications for all enrolled students
             Notification::createDeadlineNotification(
                 $studentIds,
                 auth()->id(),

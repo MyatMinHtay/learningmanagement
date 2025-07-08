@@ -64,6 +64,10 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Create new user account with role assignment and photo upload
+     * Validates user data, handles avatar upload, creates user with default active status
+     */
     public function createuser()
     {
 
@@ -91,9 +95,10 @@ class UserController extends Controller
 
         ]);
 
+        // Set default user status as Active
         $formData['status'] = "A";
 
-
+        // Handle user avatar upload with unique filename generation
         if ($file = request()->file('userimg')) {
 
             $image_name = md5(rand(1000, 10000));
@@ -104,6 +109,7 @@ class UserController extends Controller
             $file->move($upload_path, $image_full_name);
             $formData['userphoto'] = $image_url;
         } else {
+            // Set default avatar if no photo uploaded
             $formData['userphoto'] = "./assets/avatars/user.png";
         }
 
@@ -132,6 +138,10 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Update user account information including role, photo, and password
+     * Handles photo replacement, role assignment, and tracks update history
+     */
     public function updateuser(User $user, Request $request)
     {
 
@@ -157,15 +167,17 @@ class UserController extends Controller
 
 
 
+        // Handle user photo replacement with old file cleanup
         if ($file = request()->file('userphoto')) {
 
-
+            // Delete old photo if it's not the default avatar
             if ($imagepath != './assets/avatars/user.png') {
                 if (File::exists(public_path() . $imagepath)) {
                     File::delete(public_path() . $imagepath);
                 }
             }
 
+            // Upload new photo with unique filename
             $image_name = md5(rand(1000, 10000));
             $ext = strtolower($file->getClientOriginalExtension());
             $image_full_name = $image_name . '.' . $ext;
@@ -178,6 +190,7 @@ class UserController extends Controller
             $formData['userphoto'] = $image_url;
         }
 
+        // Track who updated the user account
         $formData['userupdatedby'] = auth()->user()->username;
 
 
@@ -192,6 +205,10 @@ class UserController extends Controller
     }
 
 
+    /**
+     * Soft delete user account by marking status as deleted
+     * Changes user status to 'D' instead of permanently removing from database
+     */
     public function deleteuser(User $user)
     {
         try {
@@ -204,6 +221,10 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Lock user account to prevent login access
+     * Sets user status to 'L' (Locked) for security purposes
+     */
     public function lockuser(User $user)
     {
         try {
@@ -217,6 +238,10 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Unlock user account to restore login access
+     * Sets user status back to 'A' (Active) to enable account access
+     */
     public function unlockuser(User $user)
     {
         try {

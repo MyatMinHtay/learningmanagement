@@ -73,6 +73,10 @@ class QuizController extends Controller
         }
     }
 
+    /**
+     * Create a new quiz with questions and choices in a transaction
+     * Validates quiz data, ensures each question has correct answers, creates quiz structure
+     */
     public function store(Request $request)
     {
 
@@ -101,7 +105,7 @@ class QuizController extends Controller
         try {
             DB::beginTransaction();
 
-            // Ensure at least one correct choice per question
+            // Validate that each question has at least one correct answer
             foreach ($validated['questions'] as $index => $question) {
                 $hasCorrect = collect($question['choices'])->contains('is_correct', true);
                 if (! $hasCorrect) {
@@ -109,6 +113,7 @@ class QuizController extends Controller
                 }
             }
 
+            // Create quiz with metadata
             $quiz = Quiz::create([
                 'course_id' => $validated['course_id'],
                 'title' => $validated['title'],
@@ -120,6 +125,7 @@ class QuizController extends Controller
                 'is_time_limited' => $validated['is_time_limited'],
             ]);
 
+            // Create questions and their multiple choice options
             foreach ($validated['questions'] as $q) {
                 $question = $quiz->questions()->create([
                     'text' => $q['text'],
@@ -166,6 +172,10 @@ class QuizController extends Controller
         }
     }
 
+    /**
+     * Update existing quiz by rebuilding all questions and choices
+     * Removes all existing questions/choices and recreates them with new data
+     */
     public function update(Request $request, Quiz $quiz)
     {
         $validated = $request->validate([
@@ -186,6 +196,7 @@ class QuizController extends Controller
 
         try {
             DB::transaction(function () use ($validated, $quiz) {
+                // Update quiz metadata
                 $quiz->update([
                     'title' => $validated['title'],
                     'course_id' => $validated['course_id'],
@@ -196,12 +207,13 @@ class QuizController extends Controller
                     'total_time' => $validated['is_time_limited'] ? $validated['total_time'] : null,
                 ]);
 
-                // Remove old questions and choices
+                // Remove old questions and choices completely
                 $quiz->questions()->each(function ($question) {
                     $question->choices()->delete();
                     $question->delete();
                 });
 
+                // Recreate all questions and choices with updated data
                 foreach ($validated['questions'] as $q) {
                     if (!collect($q['choices'])->contains('is_correct', true)) {
                         throw new \Exception("Each question must have at least one correct choice.");
@@ -244,21 +256,26 @@ class QuizController extends Controller
     }
 
 
+    /**
+     * Start quiz attempt with enrollment and completion validation
+     * Validates student enrollment, checks for existing attempts, creates or resumes attempt
+     */
     public function start(Course $course,Quiz $quiz)
     {
         try {
             $student = auth()->user();
 
+            // Validate user role - only students can take quizzes
             if ($student->role->role != 'student') {
                 return redirect()->back()->with('danger', 'Only students can attempt quizzes.');
             }
 
-            // Check enrollment
+            // Check if student is enrolled in the course
             if (!DB::table('course_students')->where('course_id', $course->id)->where('student_id', $student->id)->exists()) {
                 return redirect()->back()->with('danger', 'You are not enrolled in this course.');
             }
 
-            // Check if already attempted
+            // Check if student has already completed this quiz
             $attempt = DB::table('quiz_attempts')
                 ->where('quiz_id', $quiz->id)
                 ->where('student_id', $student->id)
@@ -268,12 +285,12 @@ class QuizController extends Controller
                 return redirect()->back()->with('danger','You have already completed this quiz.');
             }
 
-            // Check if the course's quiz matches the provided quiz
+            // Validate quiz belongs to the correct course
             if (!$course->quizzes || $course->quizzes->id !== $quiz->id) {
                 return redirect()->back()->with('danger', 'This quiz does not belong to the selected course.');
             }
 
-            // Start or resume attempt
+            // Create new attempt or resume existing incomplete attempt
             if (!$attempt) {
                 $attemptId = DB::table('quiz_attempts')->insertGetId([
                     'quiz_id' => $quiz->id,
@@ -297,6 +314,10 @@ class QuizController extends Controller
     }
 
 
+    /**
+     * Submit quiz answers, calculate score, and assign grade
+     * Processes student answers, calculates score percentage, assigns grade based on performance
+     */
     public function submit(Request $request, Quiz $quiz)
     {
         try {
@@ -312,7 +333,7 @@ class QuizController extends Controller
                 ->where('student_id', auth()->id())
                 ->firstOrFail();
 
-            // Prevent re-submission
+            // Prevent duplicate submissions
             if ($attempt->is_completed) {
                 return redirect()->back()->with('error', 'Quiz already submitted.');
             }
@@ -324,6 +345,7 @@ class QuizController extends Controller
 
             
 
+            // Process each question and save student answers
             foreach ($quiz->questions as $question) {
                 $selectedChoiceId = $request->input("answers.{$question->id}");
 
@@ -334,6 +356,7 @@ class QuizController extends Controller
                         'choice_id' => $selectedChoiceId,
                     ]);
 
+                    // Check if selected answer is correct and increment score
                     $correctChoice = $question->choices()->where('is_correct', true)->first();
                     if ($correctChoice && $correctChoice->id == $selectedChoiceId) {
                         $score++;
@@ -341,6 +364,7 @@ class QuizController extends Controller
                 }
             }
 
+            // Calculate percentage and assign grade based on performance
             $percentage = $total > 0 ? ($score / $total) * 100 : 0;
             $grade = '';
 
@@ -364,7 +388,7 @@ class QuizController extends Controller
 
          
 
-            // Finalize attempt
+            // Finalize quiz attempt with score and grade
             $attempt->update([
                 'score' => $score,
                 'is_completed' => true,
@@ -380,9 +404,14 @@ class QuizController extends Controller
         }
     }
 
+    /**
+     * Display quiz results with detailed answer analysis
+     * Shows student's completed quiz attempt with correct/incorrect answer details
+     */
     public function result(Quiz $quiz)
     {
         try {
+            // Get student's latest completed quiz attempt with all answer details
             $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question.choices'])
                 ->where('quiz_id', $quiz->id)
                 ->where('student_id', auth()->id())

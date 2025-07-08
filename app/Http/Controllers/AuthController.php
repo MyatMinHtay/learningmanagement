@@ -69,6 +69,10 @@ class AuthController extends Controller
     }
 
     //create
+    /**
+     * Handle user registration with profile photo upload and account creation
+     * Validates user input, uploads photo, creates user account, and auto-logs in
+     */
     public function store()
     {
         try {
@@ -94,7 +98,7 @@ class AuthController extends Controller
                 'password.password_confirmation' => "confirm password doesn't match with password"
             ]);
 
-
+            // Handle profile photo upload with unique filename generation
             if ($file = request()->file('userimg')) {
 
                 $image_name = md5(rand(1000, 10000));
@@ -105,12 +109,13 @@ class AuthController extends Controller
                 $file->move($upload_path, $image_full_name);
                 $formData['userphoto'] = $image_url;
             } else {
+                // Set default avatar if no image uploaded
                 $formData['userphoto'] = "./assets/avatars/user.png";
             }
 
             $user = User::create($formData);
 
-            //login 
+            // Auto-login user after successful registration
             auth()->login($user, $remember = true);
 
             return redirect('/')->with('success', 'Welcome Dear, ' . $user->username);
@@ -133,6 +138,10 @@ class AuthController extends Controller
     }
 
     //login
+    /**
+     * Handle user login authentication with role-based redirection
+     * Validates credentials, manages session, and redirects based on user role
+     */
     public function postLogin(Request $request)
     {
         try {
@@ -146,12 +155,14 @@ class AuthController extends Controller
 
             $remember = $request->has('remember');
 
+            // Attempt authentication with credentials
             if (auth()->attempt($formData, $remember)) {
 
                 $request->session()->regenerate();
                 $username = auth()->user()->username;
                 $role = auth()->user()->role->role;
 
+                // Role-based redirection after successful login
                 if($role == 'admin'){
                     return redirect()->route('users')->with('success', "Welcome Back $username");
                 }else{
@@ -179,6 +190,10 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Update user profile information including password change and photo upload
+     * Handles secure password verification, file cleanup, and profile updates
+     */
     public function updateprofile(Request $request)
     {
         try {
@@ -197,6 +212,7 @@ class AuthController extends Controller
                 'username.regex' => 'username must be character and number and (-) and (_) not allow other character and space'
             ]);
 
+            // Handle password change with current password verification
             if (isset($formData['password'])) {
                 if (Hash::check($formData['password'], $user->password)) {
                     $formData['password'] = Hash::make($formData['new_password']);
@@ -208,13 +224,16 @@ class AuthController extends Controller
                 unset($formData['password'], $formData['new_password'], $formData['confirm_password']);
             }
 
+            // Handle profile photo replacement with old file cleanup
             if ($file = request()->file('userphoto')) {
+                // Delete old photo if it's not the default avatar
                 if ($imagepath != './assets/avatars/user.png') {
                     if (File::exists(public_path() . $imagepath)) {
                         File::delete(public_path() . $imagepath);
                     }
                 }
 
+                // Upload new photo with unique filename
                 $image_name = md5(rand(1000, 10000));
                 $ext = strtolower($file->getClientOriginalExtension());
                 $image_full_name = $image_name . '.' . $ext;

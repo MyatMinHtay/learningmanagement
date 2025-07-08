@@ -45,6 +45,10 @@ class LessonController extends Controller
         }
     }
 
+    /**
+     * Create a new lesson with video and attachment uploads
+     * Validates lesson data, handles video and PDF file uploads, creates lesson record
+     */
     public function store(Request $request)
     {
 
@@ -60,10 +64,12 @@ class LessonController extends Controller
         ]);  
 
             try {
+                // Handle video file upload and store securely
                 if ($request->hasFile('video_file')) {
                     $validated['video'] = $request->file('video_file')->store('videos', 'public');
                 }
 
+                // Handle PDF attachment upload for lesson materials
                 if ($request->hasFile('attachment')) {
                     $validated['attachment'] = $request->file('attachment')->store('attachments', 'public');
                 }
@@ -91,6 +97,10 @@ class LessonController extends Controller
         }
     }
 
+    /**
+     * Update lesson information with file replacement handling
+     * Updates lesson data, replaces video/attachment files, cleans up old files
+     */
     public function update(Request $request, Lesson $lesson)
     {
         $validated = $request->validate([
@@ -103,6 +113,7 @@ class LessonController extends Controller
         ]);
 
         try {
+            // Replace video file - delete old, upload new
             if ($request->hasFile('video_file')) {
                 if ($lesson->video && Storage::disk('public')->exists($lesson->video)) {
                     Storage::disk('public')->delete($lesson->video);
@@ -110,6 +121,7 @@ class LessonController extends Controller
                 $validated['video'] = $request->file('video_file')->store('videos', 'public');
             }
 
+            // Replace attachment file - delete old, upload new
             if ($request->hasFile('attachment')) {
                 if ($lesson->attachment && Storage::disk('public')->exists($lesson->attachment)) {
                     Storage::disk('public')->delete($lesson->attachment);
@@ -126,12 +138,18 @@ class LessonController extends Controller
         }
     }
 
+    /**
+     * Delete lesson and cleanup associated files
+     * Removes lesson video and attachment files from storage, deletes lesson record
+     */
     public function destroy(Lesson $lesson)
     {
         try {
+            // Delete lesson video file if exists
             if ($lesson->video && Storage::disk('public')->exists($lesson->video)) {
                 Storage::disk('public')->delete($lesson->video);
             }
+            // Delete lesson attachment file if exists
             if ($lesson->attachment && Storage::disk('public')->exists($lesson->attachment)) {
                 Storage::disk('public')->delete($lesson->attachment);
             }

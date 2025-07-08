@@ -91,6 +91,10 @@ class CourseController extends Controller
         }
     }
 
+    /**
+     * Create a new course with modules and handle file uploads
+     * Validates input, uploads course image, creates course and associated modules
+     */
     public function store(Request $request)
     {
         
@@ -107,6 +111,7 @@ class CourseController extends Controller
 
         
 
+        // Handle course image upload with secure filename generation
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $cleanName = time() . '_' . preg_replace('/[^A-Za-z0-9_\-\.]/', '', str_replace(' ', '_', $file->getClientOriginalName()));
@@ -129,6 +134,7 @@ class CourseController extends Controller
         try {
             $course = Course::create($formData);
 
+            // Create course modules with proper ordering
             if ($request->has('modules')) {
                 foreach ($request->modules as $index => $moduleData) {
                     $course->modules()->create([
@@ -166,7 +172,10 @@ class CourseController extends Controller
         }
     }
 
-
+    /**
+     * Update course information, handle image replacement, and rebuild modules
+     * Replaces old course image, updates course data, and recreates all modules
+     */
     public function update(Request $request, Course $course)
     {
         $formData = $request->validate([
@@ -183,7 +192,7 @@ class CourseController extends Controller
         DB::beginTransaction();
 
         try {
-            // Handle image replacement
+            // Handle course image replacement - delete old, upload new
             if ($request->hasFile('image')) {
                 if (!empty($course->image) && File::exists(public_path($course->image))) {
                     File::delete(public_path($course->image));
@@ -208,10 +217,9 @@ class CourseController extends Controller
             // Update the course
             $course->update($formData);
 
-            // Remove old modules
+            // Remove old modules and recreate with new data
             $course->modules()->delete();
 
-            // Add new modules
             if ($request->has('modules')) {
                 foreach ($request->modules as $index => $moduleData) {
                     $course->modules()->create([
@@ -231,6 +239,10 @@ class CourseController extends Controller
         return redirect()->route('admincourses')->with('success', 'Course updated successfully.');
     }
 
+    /**
+     * Delete course and cleanup associated files and data
+     * Removes course image, deletes related modules, and removes course record
+     */
     public function destroy(Course $course)
     {
     DB::beginTransaction();
@@ -256,16 +268,22 @@ class CourseController extends Controller
         return redirect()->route('admincourses')->with('success', 'Course deleted successfully.');
     }
 
+    /**
+     * Handle student enrollment in course with validation and notification
+     * Validates student role, checks for duplicate enrollment, creates enrollment record
+     */
     public function enrollJson(Request $request, Course $course)
     {
         try {
             $student = auth()->user();
             $studentId = $student->id;
 
+            // Validate user role - only students can enroll
             if (auth()->user()->role->role != 'student') { 
                 return response()->json(['status' => 'error', 'message' => 'Only students can enroll.'], 403);
             }
 
+            // Check for existing enrollment to prevent duplicates
             $alreadyEnrolled = DB::table('course_students')
                 ->where('course_id', $course->id)
                 ->where('student_id', $studentId)
@@ -275,6 +293,7 @@ class CourseController extends Controller
                 return response()->json(['status' => 'error', 'message' => 'You are already enrolled in this course.'], 409);
             }
 
+            // Create enrollment record with timestamps
             DB::table('course_students')->insert([
                 'course_id' => $course->id,
                 'student_id' => $studentId,
@@ -282,7 +301,7 @@ class CourseController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Create notification for course creator
+            // Create notification for course creator about new enrollment
             if ($course->created_by) {
                 Notification::createEnrollmentNotification(
                     $course->created_by,
@@ -300,11 +319,16 @@ class CourseController extends Controller
         }
     }
 
+    /**
+     * Display course lessons for enrolled students only
+     * Validates student enrollment before allowing access to course content
+     */
     public function showLessons(Course $course)
     {
         try {
             $studentId = auth()->id();
 
+            // Verify student is enrolled in the course before showing lessons
             $isEnrolled = DB::table('course_students')
                 ->where('course_id', $course->id)
                 ->where('student_id', $studentId)
@@ -314,7 +338,7 @@ class CourseController extends Controller
                 return redirect()->back()->withErrors(['access' => 'You must be enrolled to view the lessons.']);
             }
 
-            // Load lessons
+            // Load lessons for enrolled student
             $lessons = $course->lessons()->get(); // Assuming Course has lessons() relationship
 
             return view('courses.lessons', compact('course', 'lessons'));

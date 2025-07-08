@@ -41,6 +41,10 @@ class SystemRoleController extends Controller
         }
     }
 
+    /**
+     * Create a new system role with permissions
+     * Validates role data, converts permissions array to string, creates role record
+     */
     public function createrole(){
           $formData = request()->validate([
             
@@ -50,6 +54,7 @@ class SystemRoleController extends Controller
           ]);
 
           try{
+                // Convert permissions array to comma-separated string for storage
                 $formData['permissions'] = implode(",",$formData['permissions']);
 
                 $newrole = SystemRole::create($formData);
@@ -83,6 +88,10 @@ class SystemRoleController extends Controller
         }
     }
 
+    /**
+     * Update existing system role with special handling for administrator role
+     * Handles permission updates differently for admin vs regular roles, prevents admin permission loss
+     */
     public function updaterole(SystemRole $role, Request $request) {
         $validatedData = $request->validate([
             'role' => 'required',
@@ -94,12 +103,13 @@ class SystemRoleController extends Controller
 
     
         try{
-
+            // Special handling for administrator role to maintain all permissions
             if($role->role == "adminstrator"){
                 unset($validatedData['permissions']);
                 $validatedData['permissions'] = $validatedData['permissionsString'];
                 
             }else{
+                // Convert permissions array to comma-separated string for regular roles
                 $validatedData['permissions'] = implode(",",$validatedData['permissions']);
             }
            
@@ -114,14 +124,20 @@ class SystemRoleController extends Controller
         // Redirect to a relevant page or return a response
     }
 
+    /**
+     * Delete system role with permission validation and constraint checking
+     * Prevents deletion of administrator role, validates user permissions, handles foreign key constraints
+     */
     public function deleterole(SystemRole $role){
 
-
+        // Prevent deletion of critical administrator role
         if($role->role == "adminstrator"){
             return redirect()->back()->with('warning',"You can't delete this record");
         }else{
+            // Validate user has sufficient permissions to delete roles
             if(auth()->user()->role->role == "adminstrator" || auth()->user()->role->role == "admin"){
 
+                // Prevent admin users from deleting other admin roles (self-protection)
                 if(auth()->user()->role->role == "admin" && $role->role == "admin"){
                     return redirect()->back()->with('warning',"You don't have permissions to delete");
                 }else{
@@ -129,6 +145,7 @@ class SystemRoleController extends Controller
                         $role->delete();
                         return redirect()->route('roles')->with('success',"Role Delete Successfully");
                 }catch(QueryException $e){
+                    // Handle foreign key constraint violations (role still in use)
                     if ($e->errorInfo[1] == 1451) {
                         return back()->withErrors(['error' => 'Cannot delete this record because it is referenced by another table.']);
                     } else {
