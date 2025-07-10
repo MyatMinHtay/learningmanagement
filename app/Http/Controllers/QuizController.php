@@ -113,13 +113,16 @@ class QuizController extends Controller
                 }
             }
 
+            // Calculate total marks from questions
+            $calculatedTotalMarks = collect($validated['questions'])->sum('marks');
+            
             // Create quiz with metadata
             $quiz = Quiz::create([
                 'course_id' => $validated['course_id'],
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
                 'created_by' => auth()->id() ?? 1,
-                'total_marks' => $validated['total_marks'],
+                'total_marks' => $calculatedTotalMarks,
                 'total_questions' => $validated['total_questions'],
                 'total_time' => $validated['is_time_limited'] ? $validated['total_time'] : null,
                 'is_time_limited' => $validated['is_time_limited'],
@@ -196,13 +199,16 @@ class QuizController extends Controller
 
         try {
             DB::transaction(function () use ($validated, $quiz) {
+                // Calculate total marks from questions
+                $calculatedTotalMarks = collect($validated['questions'])->sum('marks');
+                
                 // Update quiz metadata
                 $quiz->update([
                     'title' => $validated['title'],
                     'course_id' => $validated['course_id'],
                     'description' => $validated['description'],
                     'total_questions' => $validated['total_questions'],
-                    'total_marks' => $validated['total_marks'],
+                    'total_marks' => $calculatedTotalMarks,
                     'is_time_limited' => $validated['is_time_limited'],
                     'total_time' => $validated['is_time_limited'] ? $validated['total_time'] : null,
                 ]);
@@ -338,12 +344,8 @@ class QuizController extends Controller
                 return redirect()->back()->with('error', 'Quiz already submitted.');
             }
 
-            $score = 0;
-            $total = $quiz->questions->count();
-
-           
-
-            
+            $marksEarned = 0;
+            $totalMarks = $quiz->calculateTotalMarks();
 
             // Process each question and save student answers
             foreach ($quiz->questions as $question) {
@@ -356,21 +358,17 @@ class QuizController extends Controller
                         'choice_id' => $selectedChoiceId,
                     ]);
 
-                    // Check if selected answer is correct and increment score
+                    // Check if selected answer is correct and add question marks
                     $correctChoice = $question->choices()->where('is_correct', true)->first();
                     if ($correctChoice && $correctChoice->id == $selectedChoiceId) {
-                        $score++;
+                        $marksEarned += $question->marks;
                     }
                 }
             }
 
-            // Calculate percentage and assign grade based on performance
-            $percentage = $total > 0 ? ($score / $total) * 100 : 0;
+            // Calculate percentage and assign grade based on marks earned
+            $percentage = $totalMarks > 0 ? ($marksEarned / $totalMarks) * 100 : 0;
             $grade = '';
-
-            
-
-           
 
             if ($percentage < 50) {
                 $grade = 'Normal';
@@ -386,11 +384,9 @@ class QuizController extends Controller
                 $status = 'success';
             }
 
-         
-
-            // Finalize quiz attempt with score and grade
+            // Finalize quiz attempt with marks earned and grade
             $attempt->update([
-                'score' => $score,
+                'score' => $marksEarned,
                 'is_completed' => true,
                 'ended_at' => now(),
                 'grade' => $grade,
@@ -411,8 +407,11 @@ class QuizController extends Controller
     public function result(Quiz $quiz)
     {
         try {
+            // Load quiz questions for percentage calculation
+            $quiz->load('questions');
+            
             // Get student's latest completed quiz attempt with all answer details
-            $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question.choices'])
+            $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question', 'answers.question.choices'])
                 ->where('quiz_id', $quiz->id)
                 ->where('student_id', auth()->id())
                 ->where('is_completed', true)
@@ -434,7 +433,10 @@ class QuizController extends Controller
     public function adminresult(Quiz $quiz)
     {
         try {
-            $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question.choices'])
+            // Load quiz questions for percentage calculation
+            $quiz->load('questions');
+            
+            $attempt = QuizAttempt::with(['answers', 'answers.choice', 'answers.question', 'answers.question.choices'])
                 ->where('quiz_id', $quiz->id)
                 ->where('student_id', auth()->id())
                 ->where('is_completed', true)

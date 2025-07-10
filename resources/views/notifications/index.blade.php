@@ -23,16 +23,31 @@
             <div class="col-12">
                 @if($notifications->count() > 0)
                     @foreach($notifications as $notification)
-                        <div class="card mb-3 {{ $notification->is_read ? '' : 'border-primary' }}">
-                            <div class="card-body">
+                        @php
+                            $isUrgent = in_array($notification->type, ['quiz_deadline_urgent', 'assignment_deadline_urgent']);
+                            $urgencyLevel = $notification->data['urgency_level'] ?? '';
+                            $daysUntilDeadline = $notification->data['days_until_deadline'] ?? null;
+                            $reminderDays = $notification->data['reminder_days'] ?? null;
+                        @endphp
+                        <div class="card mb-3 {{ $notification->is_read ? '' : 'border-primary' }} {{ $isUrgent && !$notification->is_read ? 'border-danger shadow-lg' : '' }}">
+                            <div class="card-body {{ $isUrgent && !$notification->is_read ? 'bg-danger-subtle' : '' }}">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <div class="flex-grow-1">
+                                    <div class="flex-grow-1 col-10">
                                         <div class="d-flex align-items-center mb-2">
-                                            <h5 class="card-title mb-0 me-2">{{ $notification->title }}</h5>
+                                            <h5 class="card-title mb-0 me-2 {{ $isUrgent ? 'text-danger fw-bold' : '' }}">
+                                                {{ $notification->title }}
+                                            </h5>
                                             @if(!$notification->is_read)
-                                                <span class="badge bg-primary">New</span>
+                                                <span class="badge {{ $isUrgent ? 'bg-danger' : 'bg-primary' }}">
+                                                    {{ $isUrgent ? 'URGENT' : 'New' }}
+                                                </span>
                                             @endif
-                                            <span class="badge bg-secondary ms-2">
+                                            @if($urgencyLevel === 'URGENT')
+                                                <span class="badge bg-danger ms-1 animate-pulse">
+                                                    <i class="fa-solid fa-exclamation-triangle me-1"></i>URGENT
+                                                </span>
+                                            @endif
+                                            <span class="badge {{ $isUrgent ? 'bg-warning' : 'bg-secondary' }} ms-2">
                                                 @switch($notification->type)
                                                     @case('enrollment')
                                                         <i class="fa-solid fa-user-plus me-1"></i>Enrollment
@@ -43,16 +58,67 @@
                                                     @case('deadline_reminder')
                                                         <i class="fa-solid fa-clock me-1"></i>Deadline
                                                         @break
+                                                    @case('quiz_deadline_urgent')
+                                                        <i class="fa-solid fa-question-circle me-1"></i>Quiz Alert
+                                                        @break
+                                                    @case('assignment_deadline_urgent')
+                                                        <i class="fa-solid fa-file-text me-1"></i>Assignment Alert
+                                                        @break
                                                 @endswitch
                                             </span>
                                         </div>
 
-
-                                        <p class="card-text">{{ $notification->message }}</p>
+                                        <p class="card-text {{ $isUrgent ? 'fw-semibold' : '' }}">{{ $notification->message }}</p>
+                                        
+                                        {{-- Display Course and Quiz/Assignment Info --}}
+                                        @if(!empty($notification->data['course_id']))
+                                            @php
+                                                $course = \App\Models\Course::find($notification->data['course_id']);
+                                                $quiz = null;
+                                                if (!empty($notification->data['quiz_id'])) {
+                                                    $quiz = \App\Models\Quiz::find($notification->data['quiz_id']);
+                                                }
+                                            @endphp
+                                            <div class="alert alert-light border py-2 mb-2">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <strong><i class="fa-solid fa-book me-1"></i>Course:</strong>
+                                                        <span class="text-primary">{{ $course ? $course->name : 'N/A' }}</span>
+                                                    </div>
+                                                    @if($quiz)
+                                                        <div class="col-md-6">
+                                                            <strong><i class="fa-solid fa-question-circle me-1"></i>Quiz:</strong>
+                                                            <span class="text-info">{{ $quiz->title }}</span>
+                                                        </div>
+                                                    @elseif($notification->type === 'assignment_deadline_urgent')
+                                                        <div class="col-md-6">
+                                                            <strong><i class="fa-solid fa-file-text me-1"></i>Assignment:</strong>
+                                                            <span class="text-warning">Course Assignment</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endif
+                                        
                                         @if(!empty($notification->data['deadline_date']))
-                                            <p>
-                                                Deadline: {{ \Carbon\Carbon::parse($notification->data['deadline_date'])->format('d M, h:i A') }}
-                                            </p>
+                                            @php
+                                                $deadlineDate = \Carbon\Carbon::parse($notification->data['deadline_date']);
+                                                $now = \Carbon\Carbon::now();
+                                                $timeUntilDeadline = $now->diffForHumans($deadlineDate, true);
+                                                $isOverdue = $deadlineDate->isPast();
+                                            @endphp
+                                            <div class="alert {{ $isOverdue ? 'alert-danger' : ($daysUntilDeadline == 1 ? 'alert-warning' : 'alert-info') }} py-2 mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa-solid fa-clock me-2"></i>
+                                                    <div>
+                                                        <strong>Deadline:</strong> {{ $deadlineDate->format('M j, Y \a\t h:i A') }}
+                                                        <br>
+                                                        <small class="{{ $isOverdue ? 'text-danger' : '' }}">
+                                                            {{ $isOverdue ? 'Overdue by ' . $timeUntilDeadline : 'Due in ' . $timeUntilDeadline }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         @endif
 
                                         <div class="d-flex align-items-center text-muted">
@@ -75,14 +141,7 @@
                                                 </button>
                                             </form>
                                         @endif
-                                        <form method="POST" action="{{ route('notifications.destroy', $notification->id) }}" 
-                                              onsubmit="return confirm('Delete this notification?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="fa-solid fa-trash"></i> Delete
-                                            </button>
-                                        </form>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -103,7 +162,44 @@
                         </div>
                     </div>
                 @endif
-            </div>
+                        </div>
         </div>
     </div>
-</x-adminlayout> 
+
+    <style>
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .border-danger.shadow-lg {
+            box-shadow: 0 0.5rem 1rem rgba(220, 53, 69, 0.3) !important;
+        }
+        
+        .bg-danger-subtle {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+        }
+        
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+    </x-adminlayout> 

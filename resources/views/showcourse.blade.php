@@ -37,7 +37,7 @@
     </div>
 @endif
 
-<div class="mt-3 text-end">
+<div class="mt-3 text-end" id="golessondiv">
     @if(auth()->check() && auth()->user()->role->role == 'student')
     @php
         $isEnrolled = DB::table('course_students')
@@ -86,6 +86,7 @@
         $('#enrollBtn').on('click', function () {
             const courseId = $(this).data('course-id');
 
+
             $.ajax({
                 url: `/courses/${courseId}/enroll`,
                 method: 'POST',
@@ -95,6 +96,12 @@
                 success: function (res) {
                     $('#enrollMsg').html(`<div class="alert alert-success">${res.message}</div>`);
                     $('#enrollBtn').prop('disabled', true).text('Enrolled');
+                    
+                    // Create and show the "Go to Lessons" button immediately
+                    const goToLessonsBtn = `<a href="/courses/${courseId}/lessons" class="btn btn-success">
+                        <i class="fas fa-play me-2"></i>Go to Lessons
+                    </a>`;
+                    $('#golessondiv').html(goToLessonsBtn);
                 },
                 error: function (xhr) {
                     const error = xhr.responseJSON?.message || 'Enrollment failed.';

@@ -17,7 +17,7 @@
 
             @foreach($quiz->questions as $index => $q)
                 <div class="mb-4">
-                    <h6>{{ $index + 1 }}. {{ $q->text }}</h6>
+                    <h6>{{ $index + 1 }}. {{ $q->text }} <small class="text-muted">({{ $q->marks }} marks)</small></h6>
                     @foreach($q->choices as $choice)
                         <div>
                             <label>

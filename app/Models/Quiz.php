@@ -39,4 +39,28 @@ class Quiz extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * Calculate total marks available for this quiz
+     */
+    public function getTotalMarksAttribute()
+    {
+        return $this->questions->sum('marks');
+    }
+
+    /**
+     * Calculate total possible marks for this quiz
+     */
+    public function calculateTotalMarks()
+    {
+        return $this->questions()->sum('marks');
+    }
+
+    /**
+     * Get the total questions count
+     */
+    public function getTotalQuestionsAttribute()
+    {
+        return $this->questions->count();
+    }
+
 }
