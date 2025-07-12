@@ -118,6 +118,7 @@ class NotificationController extends Controller
             $request->validate([
                 'course_id' => 'required|exists:courses,id',
                 'type' => 'required|in:quiz_deadline,assignment_deadline',
+                'assignment_title' => 'required_if:type,assignment_deadline|string|max:255',
                 'title' => 'required|string|max:255',
                 'message' => 'required|string',
                 'deadline_date' => 'required|date|after:now',
@@ -139,24 +140,38 @@ class NotificationController extends Controller
                 return redirect()->back()->with('warning', 'No students enrolled in this course');
             }
 
+            // Prepare notification data
+            $notificationData = [
+                'course_id' => $course->id,
+                'type' => $request->type,
+                'deadline_date' => $request->deadline_date,
+                'reminder_value' => $request->reminder_value,
+                'reminder_unit' => $request->reminder_unit,
+                'auto_reminders_enabled' => true
+            ];
+
+            // Add assignment title if it's an assignment deadline
+            if ($request->type === 'assignment_deadline') {
+                $notificationData['assignment_title'] = $request->assignment_title;
+            }
+
             // Create deadline notifications for all enrolled students
             Notification::createDeadlineNotification(
                 $studentIds,
                 auth()->id(),
                 $request->title,
                 $request->message,
-                [
-                    'course_id' => $course->id,
-                    'type' => $request->type,
-                    'deadline_date' => $request->deadline_date,
-                    'reminder_value' => $request->reminder_value,
-                    'reminder_unit' => $request->reminder_unit,
-                    'auto_reminders_enabled' => true
-                ]
+                $notificationData
             );
 
+            $successMessage = 'Deadline notification sent to ' . count($studentIds) . ' students. Auto-reminders will be sent ' . $request->reminder_value . ' ' . $request->reminder_unit . ' before the deadline.';
+            
+            if ($request->type === 'assignment_deadline') {
+                $successMessage .= ' (Assignment: ' . $request->assignment_title . ')';
+            }
+
             return redirect()->route('notifications.index')
-                ->with('success', 'Deadline notification sent to ' . count($studentIds) . ' students. Auto-reminders will be sent ' . $request->reminder_value . ' ' . $request->reminder_unit . ' before the deadline.');
+                ->with('success', $successMessage);
 
         } catch (Exception $e) {
             Log::error('Error in storeDeadlineNotification: ' . $e->getMessage());

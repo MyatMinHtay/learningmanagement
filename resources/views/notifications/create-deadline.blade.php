@@ -70,6 +70,24 @@
                                 </div>
                             </div>
 
+                            <!-- Assignment Title (Conditional) -->
+                            <div class="mb-4" id="assignmentTitleDiv" style="display: none;">
+                                <label for="assignment_title" class="form-label fw-bold">
+                                    <i class="fas fa-file-alt text-primary me-2"></i>Assignment Title
+                                </label>
+                                <input type="text" name="assignment_title" id="assignment_title" class="form-control form-control-lg" 
+                                       value="{{ old('assignment_title') }}" placeholder="e.g., Assignment 1, Chapter 3 Exercise, Final Project">
+                                <div class="form-text mt-2">
+                                    <i class="fas fa-info-circle text-info me-1"></i>
+                                    Specify which assignment this deadline is for (e.g., "Assignment 1", "Final Project")
+                                </div>
+                                @error('assignment_title')
+                                    <div class="text-danger mt-2">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
                             <!-- Title Input -->
                             <div class="mb-4">
                                 <label for="title" class="form-label fw-bold">
@@ -183,7 +201,13 @@
                     <div class="card-body">
                         <div class="notification-preview p-3 bg-light rounded">
                             <h6 class="preview-title text-primary mb-2"></h6>
-                            <p class="preview-message mb-0"></p>
+                            <p class="preview-message mb-2"></p>
+                            <div class="preview-assignment-section" style="display: none;">
+                                <small class="text-info">
+                                    <i class="fas fa-file-alt me-1"></i>
+                                    Assignment: <span class="preview-assignment-title"></span>
+                                </small><br>
+                            </div>
                             <small class="text-muted">
                                 <i class="fas fa-clock me-1"></i>
                                 Deadline: <span class="preview-deadline"></span>
@@ -265,6 +289,8 @@
             const previewCard = document.getElementById('previewCard');
             const submitBtn = document.getElementById('submitBtn');
             const submitSpinner = document.getElementById('submitSpinner');
+            const assignmentTitleDiv = document.getElementById('assignmentTitleDiv');
+            const assignmentTitleInput = document.getElementById('assignment_title');
             
             // Auto-fill functionality with improved templates
             typeSelect.addEventListener('change', function() {
@@ -285,6 +311,16 @@
                         messageInput.value = '📋 Assignment Deadline Approaching!\n\nThis is a friendly reminder that your assignment submission deadline is coming up. Please ensure you submit your work on time.\n\nLate submissions may affect your grade. Contact me if you need any clarification.\n\nBest regards! 👨‍🏫';
                     }
                 }
+
+                if (type === 'assignment_deadline') {
+                    assignmentTitleDiv.style.display = 'block';
+                    if (!assignmentTitleInput.value) {
+                        assignmentTitleInput.value = 'Assignment 1'; // Default value
+                    }
+                } else {
+                    assignmentTitleDiv.style.display = 'none';
+                    assignmentTitleInput.value = ''; // Clear if not assignment
+                }
                 
                 updatePreview();
             });
@@ -293,18 +329,32 @@
             [titleInput, messageInput, deadlineInput].forEach(input => {
                 input.addEventListener('input', updatePreview);
             });
+
+            // Assignment title input update
+            assignmentTitleInput.addEventListener('input', updatePreview);
             
             function updatePreview() {
                 const title = titleInput.value;
                 const message = messageInput.value;
                 const deadline = deadlineInput.value;
+                const assignmentTitle = assignmentTitleInput.value;
+                const type = typeSelect.value;
                 
-                if (title || message || deadline) {
+                if (title || message || deadline || assignmentTitle) {
                     previewCard.style.display = 'block';
                     previewCard.classList.add('animate-fade-in');
                     
                     document.querySelector('.preview-title').textContent = title || 'Notification Title';
                     document.querySelector('.preview-message').textContent = message || 'Notification message will appear here...';
+                    
+                    // Show/hide assignment section based on type
+                    const assignmentSection = document.querySelector('.preview-assignment-section');
+                    if (type === 'assignment_deadline' && assignmentTitle) {
+                        assignmentSection.style.display = 'block';
+                        document.querySelector('.preview-assignment-title').textContent = assignmentTitle;
+                    } else {
+                        assignmentSection.style.display = 'none';
+                    }
                     
                     if (deadline) {
                         const date = new Date(deadline);

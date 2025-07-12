@@ -70,6 +70,19 @@
 
                                         <p class="card-text {{ $isUrgent ? 'fw-semibold' : '' }}">{{ $notification->message }}</p>
                                         
+                                        {{-- Display Assignment Title Prominently for Assignment Notifications --}}
+                                        @if(($notification->type === 'assignment_deadline_urgent' || ($notification->type === 'deadline_reminder' && isset($notification->data['assignment_title']))) && !empty($notification->data['assignment_title']))
+                                            <div class="alert alert-primary border-primary py-2 mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa-solid fa-clipboard-list me-2 text-primary"></i>
+                                                    <div>
+                                                        <strong class="text-primary">Assignment:</strong>
+                                                        <span class="fs-6 fw-bold text-dark">{{ $notification->data['assignment_title'] }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        
                                         {{-- Display Course and Quiz/Assignment Info --}}
                                         @if(!empty($notification->data['course_id']))
                                             @php
@@ -90,10 +103,12 @@
                                                             <strong><i class="fa-solid fa-question-circle me-1"></i>Quiz:</strong>
                                                             <span class="text-info">{{ $quiz->title }}</span>
                                                         </div>
-                                                    @elseif($notification->type === 'assignment_deadline_urgent')
+                                                    @elseif($notification->type === 'assignment_deadline_urgent' || $notification->type === 'deadline_reminder')
                                                         <div class="col-md-6">
                                                             <strong><i class="fa-solid fa-file-text me-1"></i>Assignment:</strong>
-                                                            <span class="text-warning">Course Assignment</span>
+                                                            <span class="text-warning">
+                                                                {{ $notification->data['assignment_title'] ?? 'Course Assignment' }}
+                                                            </span>
                                                         </div>
                                                     @endif
                                                 </div>

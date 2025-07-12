@@ -72,6 +72,7 @@ class AssignmentController extends Controller
         try {
             $request->validate([
                 'course_id' => 'required|exists:courses,id',
+                'assignment_title' => 'required|string|max:255',
                 'files' => 'required|array',
                 'files.*' => 'file|mimes:pdf,zip|max:20480',
                 'note' => 'nullable|string|max:1000',
@@ -89,6 +90,17 @@ class AssignmentController extends Controller
                 return redirect()->back()->with('error', 'You are not enrolled in the selected course.');
             }
 
+            // Check if student has already submitted this specific assignment
+            $alreadySubmitted = Assignment::hasStudentSubmittedAssignment(
+                $request->course_id,
+                $student->id,
+                $request->assignment_title
+            );
+
+            if ($alreadySubmitted) {
+                return redirect()->back()->with('error', 'You have already submitted an assignment with this title for this course.');
+            }
+
             // Process and store multiple assignment files securely
             $paths = [];
             foreach ($request->file('files') as $file) {
@@ -99,6 +111,7 @@ class AssignmentController extends Controller
             $assignment = Assignment::create([
                 'course_id' => $request->course_id,
                 'student_id' => $student->id,
+                'assignment_title' => $request->assignment_title,
                 'files' => json_encode($paths),
                 'status' => 'pending',
                 'remark' => $request->note,

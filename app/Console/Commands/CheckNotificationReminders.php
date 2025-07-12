@@ -82,13 +82,27 @@ class CheckNotificationReminders extends Command
                     $this->info("Processing course: {$course->name} with {$enrolledStudents->count()} students");
                     
                     foreach ($enrolledStudents as $studentId) {
+                        $this->info("Processing student ID: {$studentId}");
+                        Log::info("Processing student ID: {$studentId}");
+                        
                         if ($type === 'quiz_deadline') {
                             if ($this->sendQuizReminder($studentId, $course, $deadline, $reminderValue, $reminderUnit)) {
                                 $remindersSent++;
+                                $this->info("✓ Quiz reminder sent to student {$studentId}");
+                                Log::info("Quiz reminder sent to student {$studentId}");
+                            } else {
+                                $this->warn("✗ Quiz reminder NOT sent to student {$studentId}");
+                                Log::warning("Quiz reminder NOT sent to student {$studentId}");
                             }
                         } elseif ($type === 'assignment_deadline') {
-                            if ($this->sendAssignmentReminder($studentId, $course, $deadline, $reminderValue, $reminderUnit)) {
+                            $assignmentTitle = $notification->data['assignment_title'] ?? null;
+                            if ($this->sendAssignmentReminder($studentId, $course, $deadline, $reminderValue, $reminderUnit, $assignmentTitle)) {
                                 $remindersSent++;
+                                $this->info("✓ Assignment reminder sent to student {$studentId}");
+                                Log::info("Assignment reminder sent to student {$studentId}");
+                            } else {
+                                $this->warn("✗ Assignment reminder NOT sent to student {$studentId}");
+                                Log::warning("Assignment reminder NOT sent to student {$studentId}");
                             }
                         }
                     }
@@ -224,27 +238,40 @@ class CheckNotificationReminders extends Command
     /**
      * Send assignment reminder to student
      */
-    private function sendAssignmentReminder($studentId, $course, $deadline, $reminderValue, $reminderUnit)
+    private function sendAssignmentReminder($studentId, $course, $deadline, $reminderValue, $reminderUnit, $assignmentTitle)
     {
         try {
-            // Check if already sent reminder for this deadline
+            $this->info("=== ASSIGNMENT REMINDER DEBUG for Student {$studentId} ===");
+            Log::info("Starting assignment reminder process for student {$studentId}");
+            
+            // Check if already sent reminder for this specific assignment deadline
             $existingReminder = Notification::where('type', 'assignment_deadline_urgent')
                 ->where('recipient_id', $studentId)
                 ->whereJsonContains('data->deadline_date', $deadline->toISOString())
+                ->whereJsonContains('data->assignment_title', $assignmentTitle)
                 ->exists();
                 
             if ($existingReminder) {
+                $this->warn("Already sent assignment reminder to student {$studentId} for assignment '{$assignmentTitle}'");
+                Log::info("Already sent assignment reminder to student {$studentId} for assignment '{$assignmentTitle}'");
                 return false;
             }
             
-            // Check if student has submitted assignment
-            $hasSubmitted = \App\Models\Assignment::where('course_id', $course->id)
-                ->where('student_id', $studentId)
-                ->exists();
+            // Check if student has submitted this specific assignment
+            $hasSubmitted = \App\Models\Assignment::hasStudentSubmittedAssignment(
+                $course->id,
+                $studentId,
+                $assignmentTitle
+            );
                 
             if ($hasSubmitted) {
+                $this->info("Student {$studentId} has already submitted assignment '{$assignmentTitle}'");
+                Log::info("Student {$studentId} has submitted assignment '{$assignmentTitle}' for course {$course->id}");
                 return false;
             }
+            
+            $this->info("Student {$studentId} has NOT submitted assignment '{$assignmentTitle}' - sending reminder");
+            Log::info("Student {$studentId} needs assignment reminder for '{$assignmentTitle}'");
             
             // Calculate time until deadline
             $now = Carbon::now();
@@ -260,13 +287,13 @@ class CheckNotificationReminders extends Command
             $urgencyEmoji = $isUrgent ? '🚨' : '📋';
             
             $unitText = $timeUntilDeadline == 1 ? rtrim($reminderUnit, 's') : $reminderUnit;
-            $title = "{$urgencyEmoji} {$urgencyLevel}: Assignment Deadline in {$timeUntilDeadline} {$unitText}";
+            $title = "{$urgencyEmoji} {$urgencyLevel}: '{$assignmentTitle}' Deadline in {$timeUntilDeadline} {$unitText}";
             
             $message = $isUrgent 
-                ? "🚨 URGENT REMINDER: Your assignment for {$course->name} is due soon!\n\nDeadline: {$deadline->format('M j, Y \a\t h:i A')}\n\nPlease submit it as soon as possible!"
-                : "📋 REMINDER: Your assignment for {$course->name} is due in {$timeUntilDeadline} {$unitText}.\n\nDeadline: {$deadline->format('M j, Y \a\t h:i A')}\n\nDon't forget to submit it before the deadline!";
+                ? "🚨 URGENT REMINDER: Your assignment '{$assignmentTitle}' for {$course->name} is due soon!\n\nDeadline: {$deadline->format('M j, Y \a\t h:i A')}\n\nPlease submit it as soon as possible!"
+                : "📋 REMINDER: Your assignment '{$assignmentTitle}' for {$course->name} is due in {$timeUntilDeadline} {$unitText}.\n\nDeadline: {$deadline->format('M j, Y \a\t h:i A')}\n\nDon't forget to submit it before the deadline!";
 
-            Notification::create([
+            $notificationData = [
                 'type' => 'assignment_deadline_urgent',
                 'recipient_id' => $studentId,
                 'sender_id' => $course->created_by,
@@ -274,6 +301,7 @@ class CheckNotificationReminders extends Command
                 'message' => $message,
                 'data' => [
                     'course_id' => $course->id,
+                    'assignment_title' => $assignmentTitle,
                     'deadline_date' => $deadline->toISOString(),
                     'time_until_deadline' => $timeUntilDeadline,
                     'reminder_value' => $reminderValue,
@@ -282,14 +310,22 @@ class CheckNotificationReminders extends Command
                 ],
                 'created_at' => now(),
                 'updated_at' => now()
-            ]);
+            ];
             
-            $this->info("Sent assignment reminder to student {$studentId} for course {$course->name}");
+            $this->info("Creating assignment notification for '{$assignmentTitle}' with data: " . json_encode($notificationData));
+            Log::info("Creating assignment notification for '{$assignmentTitle}': " . json_encode($notificationData));
+            
+            $notification = Notification::create($notificationData);
+            
+            $this->info("✓ Successfully created assignment notification {$notification->id} for student {$studentId} - Assignment: '{$assignmentTitle}'");
+            Log::info("Created assignment notification {$notification->id} for student {$studentId} - Assignment: '{$assignmentTitle}'");
+            
             return true;
             
         } catch (Exception $e) {
             $this->error("Error sending assignment reminder to student {$studentId}: " . $e->getMessage());
-            Log::error("Error sending assignment reminder: " . $e->getMessage());
+            Log::error("Error sending assignment reminder to student {$studentId}: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
             return false;
         }
     }

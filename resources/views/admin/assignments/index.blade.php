@@ -14,6 +14,7 @@
                         <th>ID</th>
                         <th>Course</th>
                         <th>Student</th>
+                        <th>Assignment Title</th>
                         <th>Files</th>
                         <th>Status</th>
                         <th>Mark</th>
@@ -29,6 +30,7 @@
                             <td>{{ $assignment->id }}</td>
                             <td>{{ $assignment->course->name }}</td>
                             <td>{{ $assignment->student->username }}</td>
+                            <td>{{ $assignment->assignment_title }}</td>
                             <td>
                                 @foreach (json_decode($assignment->files) as $file)
                                     <a href="{{ asset('storage/' . $file) }}" target="_blank" class="d-block">

@@ -171,6 +171,10 @@
 <x-alert type='danger'>{{ session('danger') }}</x-alert>
 @endif
 
+@if(session('error'))
+<x-alert type='danger'>{{ session('error') }}</x-alert>
+@endif
+
 <x-showerror name="error"></x-showerror>
 
 <script>
