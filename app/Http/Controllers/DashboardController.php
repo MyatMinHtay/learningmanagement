@@ -47,9 +47,6 @@ class DashboardController extends Controller
     public function showStudentDashboard()
     {
         try {
-            // Check for deadline reminders when student visits dashboard
-            NotificationController::checkAndSendReminders();
-            
             $user = Auth::user();
             return redirect()->route('student.courses', $user->id);
 

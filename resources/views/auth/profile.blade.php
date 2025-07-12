@@ -19,24 +19,7 @@
                                 <th scope="row">Role</th>
                                 <td>{{ $user->role->role ?? 'N/A' }}</td>
                             </tr>
-                            <tr>
-                                <th scope="row">Status</th>
-                                <td>
-                                    @switch($user->status)
-                                        @case('A')
-                                            <span class="badge bg-success">Active</span>
-                                            @break
-                                        @case('D')
-                                            <span class="badge bg-danger">Disabled</span>
-                                            @break
-                                        @case('L')
-                                            <span class="badge bg-warning text-dark">Locked</span>
-                                            @break
-                                        @default
-                                            <span class="badge bg-secondary">Unknown</span>
-                                    @endswitch
-                                </td>
-                            </tr>
+                           
                             
                             <tr>
                                 <th scope="row">Joined At</th>

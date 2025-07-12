@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('files'); // multiple files stored as JSON array of paths
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->text('remark')->nullable(); // instructor's feedback/reason
-            $table->unsignedBigInteger('mark')->nullable();
+            $table->integer('mark')->nullable();
             $table->timestamps();
         });
         

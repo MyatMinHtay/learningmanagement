@@ -22,9 +22,6 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         try {
-            // Check for deadline reminders when students browse courses
-            NotificationController::checkAndSendReminders();
-            
             $query = Course::with(['category', 'students']);
             
             // Filter by category if provided
@@ -355,9 +352,6 @@ class CourseController extends Controller
     public function showStudentCourses(User $student)
     {
         try {
-            // Check for deadline reminders when viewing student courses
-            NotificationController::checkAndSendReminders();
-            
             $studentCourses = $student->courses()->paginate(20);
 
             return view('admin.student.courses', compact('studentCourses'));

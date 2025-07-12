@@ -8,7 +8,7 @@
                 @php $first = $lessons->first(); @endphp
 
                 @if($first)
-                    <h5 id="lessonTitle">{{ $first->title }}</h5>
+                    <h5 id="lessonTitle">{{ $first->title }}</h5> 
                     <div id="lessonVideo" class="mb-3">
                         @include('components.lesson-video', ['lesson' => $first])
                     </div>
