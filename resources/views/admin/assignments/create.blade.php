@@ -25,6 +25,12 @@
                     <x-error name="files" />
                     <x-error name="files.*" />
                 </div>
+
+                <div class="col-md-12">
+                    <label for="assignment_title">Assignment Title</label>
+                    <input type="text" name="assignment_title" rows="3" class="form-control" placeholder="Add Assignment Title" value="{{ old('assignment_title') }}">
+                    <x-error name="assignment_title" />
+                </div>
     
                 <div class="col-md-12">
                     <label for="note">Optional Note to Instructor</label>

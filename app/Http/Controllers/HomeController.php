@@ -12,7 +12,14 @@ class HomeController extends Controller
     public function showabout()
     {
         try {
-            return view('about');
+
+            $teachers = User::with('role')->whereHas('role', function ($query) {
+                $query->where('role', 'teacher');
+            })->limit(4)->get();
+
+            return view('about', [
+                'teachers' => $teachers
+            ]);
 
         } catch (Exception $e) {
             Log::error('Error in showabout: ' . $e->getMessage());
@@ -20,27 +27,6 @@ class HomeController extends Controller
         }
     }
     
-    public function showTeam()
-    {
-        try {
-            return view('team');
-
-        } catch (Exception $e) {
-            Log::error('Error in showTeam: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Unable to load team page. Please try again.');
-        }
-    }
-
-    public function showTestimonial()
-    {
-        try {
-            return view('testimonial');
-
-        } catch (Exception $e) {
-            Log::error('Error in showTestimonial: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Unable to load testimonial page. Please try again.');
-        }
-    }
 
     public function showcourses()
     {

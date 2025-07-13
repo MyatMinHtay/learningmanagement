@@ -33,7 +33,17 @@ class AuthController extends Controller
                 $user = null;
             }
 
-            return view('home');
+          
+
+            $teachers = User::with('role')->whereHas('role', function ($query) {
+                $query->where('role', 'teacher');
+            })->limit(4)->get();
+
+            
+
+            return view('home', [
+                'teachers' => $teachers
+            ]);
 
         } catch (Exception $e) {
             Log::error('Error in auth index: ' . $e->getMessage());
@@ -80,7 +90,7 @@ class AuthController extends Controller
             $formData = request()->validate([
 
                 'email' => ['required', 'email', Rule::unique('users', 'email')],
-                'username' => ['required', 'max:255', 'min:3', Rule::unique('users', 'username'), 'regex:/^[A-Za-z0-9]+$/'],
+                'username' => ['required', 'max:255', 'min:3', Rule::unique('users', 'username'), 'regex:/^[A-Za-z0-9 ]+$/'],
                 'password' => [
                     'required',
                     'confirmed', // Make sure the password confirmation field is present and matches the password field
@@ -203,7 +213,7 @@ class AuthController extends Controller
 
             $formData = request()->validate([
                 'email' => 'nullable|email|unique:users,email,' . $user->id,
-                'username' => 'nullable|regex:/^[A-Za-z0-9\-_]+$/|unique:users,username,' . $user->id,
+                'username' => 'nullable|regex:/^[A-Za-z0-9\-_ ]+$/|unique:users,username,' . $user->id,
                 'userphoto' => ['mimes:jpeg,png,jpg', 'max:2048', 'sometimes'],
                 'password' => 'sometimes',
                 'new_password' => 'nullable',

@@ -198,6 +198,7 @@ class AssignmentController extends Controller
             $request->validate([
                 'files' => 'nullable|array',
                 'files.*' => 'file|mimes:pdf,zip|max:20480',
+                'assignment_title' => 'required|string|max:255',
                 'note' => 'nullable|string|max:1000',
             ]);
 
@@ -221,6 +222,7 @@ class AssignmentController extends Controller
 
             // Update assignment note and reset status for re-evaluation
             $assignment->remark = $request->note;
+            $assignment->assignment_title = $request->assignment_title;
             $assignment->status = 'pending'; // Reset status when updated
             $assignment->save();
 

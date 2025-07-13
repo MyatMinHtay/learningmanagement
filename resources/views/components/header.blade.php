@@ -18,11 +18,10 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav ms-auto p-4 p-lg-0">
-                <a href="/" class="nav-item nav-link active">Home</a>
-                <a href="/about" class="nav-item nav-link">About</a>
-                <a href="/courses" class="nav-item nav-link">Courses</a>
-             
-                <a href="/contact" class="nav-item nav-link">Contact</a>
+                <a href="/" class="nav-item nav-link {{ Request::is('/') ? 'active' : '' }}">Home</a>
+                <a href="/about" class="nav-item nav-link {{ Request::is('about') ? 'active' : '' }}">About</a>
+                <a href="/courses" class="nav-item nav-link {{ Request::is('courses') ? 'active' : '' }}">Courses</a>
+                <a href="/contact" class="nav-item nav-link {{ Request::is('contact') ? 'active' : '' }}">Contact</a>
                 @auth
                     <!-- Chat Link -->
                     @if (

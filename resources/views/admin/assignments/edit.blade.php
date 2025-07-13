@@ -19,6 +19,12 @@
                     <label for="note">Optional Note to Instructor</label>
                     <textarea name="note" rows="3" class="form-control">{{ old('note', $assignment->remark) }}</textarea>
                 </div>
+
+                <div class="col-md-12">
+                    <label for="assignment_title">Assignment Title</label>
+                    <input type="text" name="assignment_title" class="form-control" placeholder="Add Assignment Title" value="{{ old('assignment_title', $assignment->assignment_title) }}">
+                    <x-error name="assignment_title" />
+                </div>
             </div>
     
             <div class="modal-footer">

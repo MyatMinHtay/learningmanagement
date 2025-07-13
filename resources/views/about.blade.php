@@ -115,7 +115,7 @@
 
 
     <!-- Team Start -->
-     <x-team></x-team>
+     <x-team :teachers="$teachers"></x-team>
     <!-- Team End -->
 
 </x-layout>

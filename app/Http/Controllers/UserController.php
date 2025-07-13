@@ -76,7 +76,7 @@ class UserController extends Controller
         $formData = request()->validate([
 
             'email' => ['required', 'email', Rule::unique('users', 'email')],
-            'username' => ['required', 'max:255', 'min:3', Rule::unique('users', 'username'), 'regex:/^[A-Za-z0-9]+$/'],
+            'username' => ['required', 'max:255', 'min:3', Rule::unique('users', 'username'), 'regex:/^[A-Za-z0-9 ]+$/'],
             'password' => [
                 'required',
                 'confirmed', // Make sure the password confirmation field is present and matches the password field
@@ -152,7 +152,7 @@ class UserController extends Controller
         $formData = $request->validate([
 
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'username' => ['required', 'max:255', 'min:3', Rule::unique('users')->ignore($user->id), 'regex:/^[A-Za-z0-9]+$/'],
+            'username' => ['required', 'max:255', 'min:3', Rule::unique('users')->ignore($user->id), 'regex:/^[A-Za-z0-9 ]+$/'],
             'role_id' => ['required', 'integer'],
             'userphoto' => ['mimes:jpeg,png,jpg', 'max:2048', 'sometimes'],
             'password' => 'nullable|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
