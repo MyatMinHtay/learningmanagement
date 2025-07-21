@@ -27,6 +27,16 @@ class Assignment extends Model
         return $this->belongsTo(User::class, 'student_id'); 
     }
 
+    public function user() { 
+        return $this->belongsTo(User::class, 'student_id'); 
+    }
+
+    public function submissions() {
+        return $this->hasMany(Assignment::class, 'assignment_title', 'assignment_title')
+                    ->where('course_id', $this->course_id)
+                    ->whereNotNull('student_id');
+    }
+
     /**
      * Check if a specific assignment has been submitted by a student
      */

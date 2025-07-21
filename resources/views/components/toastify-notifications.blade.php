@@ -1,19 +1,11 @@
-@props(['type' => 'success', 'message' => ''])
 
-@once
-    <!-- Toastify CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <!-- Toastify JS -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-@endonce
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Get the message from slot or prop
-        const message = `{{ $message ?: $slot }}`;
-        const type = '{{ $type }}';
-        
-         if (message.trim()) {
+        // Function to show toast notification
+        function showToast(message, type) {
+            if (!message || !message.trim()) return;
+            
             // Define colors and icons based on alert type
             let backgroundColor, icon;
             switch(type) {
@@ -43,7 +35,7 @@
                 text: icon + ' ' + message,
                 duration: 5000,
                 close: true,
-                gravity: "top",
+                gravity: "bottom",
                 position: "right",
                 stopOnFocus: true,
                 style: {
@@ -56,5 +48,33 @@
                 onClick: function(){}
             }).showToast();
         }
+        
+        // Check for Laravel session messages
+        @if (session('success'))
+            showToast('{{ session('success') }}', 'success');
+        @endif
+        
+        @if (session('error'))
+            showToast('{{ session('error') }}', 'error');
+        @endif
+        
+        @if (session('danger'))
+            showToast('{{ session('danger') }}', 'danger');
+        @endif
+        
+        @if (session('warning'))
+            showToast('{{ session('warning') }}', 'warning');
+        @endif
+        
+        @if (session('info'))
+            showToast('{{ session('info') }}', 'info');
+        @endif
+        
+        // Handle validation errors
+        @if (isset($errors) && $errors->any())
+            @foreach ($errors->all() as $error)
+                showToast('{{ $error }}', 'error');
+            @endforeach
+        @endif
     });
 </script>

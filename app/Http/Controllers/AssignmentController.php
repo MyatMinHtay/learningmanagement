@@ -233,4 +233,111 @@ class AssignmentController extends Controller
             return redirect()->back()->with('error', 'Failed to update assignment. Please try again.');
         }
     }
+
+    public function reportTable(Request $request)
+    {
+        try {
+            $query = Assignment::with(['course', 'course.creator', 'student'])
+                ->whereNotNull('assignment_title')
+                ->where('assignment_title', '!=', '');
+            
+            // Filter by teacher/creator
+            if ($request->has('teacher') && $request->teacher != '') {
+                $query->whereHas('course', function($q) use ($request) {
+                    $q->where('created_by', $request->teacher);
+                });
+            }
+            
+            // Filter by course
+            if ($request->has('course') && $request->course != '') {
+                $query->where('course_id', $request->course);
+            }
+            
+            // Filter by status
+            if ($request->has('status') && $request->status != '') {
+                $query->where('status', $request->status);
+            }
+            
+            // Filter by date range
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+            
+            $assignments = $query->latest()->paginate(15);
+            $teachers = \App\Models\User::whereHas('role', function($q) {
+                $q->where('role', 'teachers');
+            })->get();
+            $courses = Course::all();
+            
+            return view('admin.reports.assignments', compact('assignments', 'teachers', 'courses'));
+            
+        } catch (Exception $e) {
+            Log::error('Error in assignment report table: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load assignment reports. Please try again.');
+        }
+    }
+
+    public function submissionReportTable(Request $request)
+    {
+        try {
+            // Get submissions (assignments with student_id not null and files uploaded)
+            $query = Assignment::with(['course', 'student', 'course.creator'])
+                ->whereNotNull('student_id')
+                ->whereNotNull('files')
+                ->where('files', '!=', '[]')
+                ->where('files', '!=', '');
+            
+            // Filter by student
+            if ($request->has('student') && $request->student != '') {
+                $query->where('student_id', $request->student);
+            }
+            
+            // Filter by course
+            if ($request->has('course') && $request->course != '') {
+                $query->where('course_id', $request->course);
+            }
+            
+            // Filter by status
+            if ($request->has('status') && $request->status != '') {
+                $query->where('status', $request->status);
+            }
+            
+            // Filter by teacher
+            if ($request->has('teacher') && $request->teacher != '') {
+                $query->whereHas('course', function($q) use ($request) {
+                    $q->where('created_by', $request->teacher);
+                });
+            }
+            
+            // Filter by date range
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('updated_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('updated_at', '<=', $request->date_to);
+            }
+            
+            $submissions = $query->latest('updated_at')->paginate(15);
+
+           
+            $students = \App\Models\User::whereHas('role', function($q) {
+                $q->where('role', 'students');
+            })->get();
+            $teachers = \App\Models\User::whereHas('role', function($q) {
+                $q->where('role', 'teachers');
+            })->get();
+            $courses = Course::all();
+            
+            return view('admin.reports.assignment-submissions', compact('submissions', 'students', 'teachers', 'courses'));
+            
+        } catch (Exception $e) {
+            Log::error('Error in assignment submission report table: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load assignment submission reports. Please try again.');
+        }
+    }
 }

@@ -46,10 +46,26 @@ class NotificationController extends Controller
 
             $notification->markAsRead();
 
+            // Check if request expects JSON (AJAX)
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Notification marked as read'
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Notification marked as read');
 
         } catch (Exception $e) {
             Log::error('Error in markAsRead: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to mark notification as read'
+                ], 500);
+            }
+            
             return redirect()->back()->with('error', 'Failed to mark notification as read. Please try again.');
         }
     }
@@ -69,10 +85,26 @@ class NotificationController extends Controller
                     'read_at' => now()
                 ]);
 
+            // Check if request expects JSON (AJAX)
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'All notifications marked as read'
+                ]);
+            }
+
             return redirect()->back()->with('success', 'All notifications marked as read');
 
         } catch (Exception $e) {
             Log::error('Error in markAllAsRead: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to mark all notifications as read'
+                ], 500);
+            }
+            
             return redirect()->back()->with('error', 'Failed to mark all notifications as read. Please try again.');
         }
     }
@@ -90,6 +122,41 @@ class NotificationController extends Controller
         } catch (Exception $e) {
             Log::error('Error in getUnreadCount: ' . $e->getMessage());
             return response()->json(['count' => 0, 'error' => 'Unable to fetch count'], 500);
+        }
+    }
+
+    /**
+     * Get recent unread notifications for popup display
+     * Returns JSON response with recent unread notifications
+     */
+    public function getRecentNotifications()
+    {
+        try {
+            $notifications = Notification::forUser(auth()->id())
+                ->unread()
+                ->with(['sender'])
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function ($notification) {
+                    return [
+                        'id' => $notification->id,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'type' => $notification->type,
+                        'created_at' => $notification->created_at->diffForHumans(),
+                        'sender' => $notification->sender ? $notification->sender->username : 'System'
+                    ];
+                });
+
+            return response()->json([
+                'notifications' => $notifications,
+                'total_unread' => Notification::forUser(auth()->id())->unread()->count()
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error in getRecentNotifications: ' . $e->getMessage());
+            return response()->json(['notifications' => [], 'total_unread' => 0, 'error' => 'Unable to fetch notifications'], 500);
         }
     }
 

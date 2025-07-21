@@ -1,7 +1,7 @@
 
-    <!-- Spinner Start -->
+<!-- Spinner Start -->
     <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <div class="spinner-border text-primary container" style="width: 3rem; height: 3rem;" role="status">
             <span class="sr-only">Loading...</span>
         </div>
     </div>
@@ -39,7 +39,7 @@
                     @if (
                        auth()->user()->role->role == 'student' || auth()->user()->role->role == 'teacher'
                     )
-                        <a href="{{ route('notifications.index') }}" class="nav-item nav-link position-relative">
+                        <a href="{{ route('notifications.index') }}" class="nav-item nav-link position-relative" title="Notifications" id="notification-bell">
                             <i class="fas fa-bell"></i>
                             <span id="user-notification-badge" class="position-absolute badge badge-danger rounded-pill" style="display: none; font-size: 0.6rem; top: 8px; right: 8px;">
                                 0
@@ -74,34 +74,64 @@
     <div class="mt-5">
         <!-- Navbar End -->
 
-    @if (session('success'))
-    <x-alert type='success'>{{ session('success') }}</x-alert>
-    @endif
+    <!-- Include Toastify Notifications -->
+    <x-toastify-notifications />
     
-    @if (session('warning'))
-    <x-alert type='warning'>{{ session('warning') }}</x-alert>
-    @endif
-    
-    @if (session('danger'))
-    <x-alert type='danger'>{{ session('danger') }}</x-alert>
-    @endif
-    
-    <x-showerror name="error"></x-showerror>
+    <!-- Toast Notification Styles -->
+    <style>
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        .toast {
+            min-width: 300px;
+            max-width: 350px;
+        }
+        
+        .toast-header {
+            border-bottom: none !important;
+        }
+        
+        .toast-body {
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        #notification-toast-container .toast:hover {
+            transform: scale(1.02);
+            transition: transform 0.2s ease;
+        }
+    </style>
     
     @auth
     <script>
     // Function to update notification count for regular users
     const badge = document.getElementById('user-notification-badge');
     const chatBadge = document.getElementById('chat-notification-badge');
+    const notificationBell = document.getElementById('notification-bell');
 
     
     function updateUserNotificationCount() {
         fetch('/notifications/unread-count')
             .then(response => response.json())
             .then(data => {
-
-                
-                
                 if (data.count > 0) {
                     badge.textContent = data.count > 99 ? '99+' : data.count;
                     badge.style.display = 'inline';
@@ -113,6 +143,122 @@
                 console.error('Error fetching notification count:', error);
             });
     }
+
+    // Function to show toast notifications
+    function showNotificationToast(notification) {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('notification-toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'notification-toast-container';
+            toastContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                max-width: 350px;
+            `;
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = 'toast show';
+        toast.style.cssText = `
+            margin-bottom: 10px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease-out;
+        `;
+        
+        toast.innerHTML = `
+            <div class="toast-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 7px 7px 0 0;">
+                <i class="fas fa-bell me-2"></i>
+                <strong class="me-auto">New Notification</strong>
+                <small class="text-light">${notification.created_at}</small>
+                <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()"></button>
+            </div>
+            <div class="toast-body" style="padding: 12px;">
+                <h6 class="mb-2" style="color: #333; font-weight: 600;">${notification.title}</h6>
+                <p class="mb-2" style="color: #666; font-size: 0.9rem; line-height: 1.4;">${notification.message}</p>
+                <small class="text-muted">From: ${notification.sender}</small>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-primary me-2" onclick="markNotificationAsRead('${notification.id}', this.closest('.toast'))">
+                        <i class="fas fa-check me-1"></i>Mark as Read
+                    </button>
+                    <a href="/notifications" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-list me-1"></i>View All
+                    </a>
+                </div>
+            </div>
+        `;
+
+        toastContainer.appendChild(toast);
+
+        // No auto-remove - only manual close
+    }
+
+    // Function to fetch and show recent notifications as toasts
+     function showRecentNotificationsAsToasts() {
+         // Get shown notifications from localStorage
+         const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
+         
+         fetch('/notifications/recent')
+             .then(response => response.json())
+             .then(data => {
+                 if (data.notifications && data.notifications.length > 0) {
+                     // Filter out already shown notifications
+                     const newNotifications = data.notifications.filter(notification => 
+                         !shownNotifications.includes(notification.id.toString())
+                     );
+                     
+                     if (newNotifications.length > 0) {
+                         // Show up to 3 most recent new notifications as toasts
+                         newNotifications.slice(0, 3).forEach((notification, index) => {
+                             setTimeout(() => {
+                                 showNotificationToast(notification);
+                                 // Mark notification as shown
+                                 shownNotifications.push(notification.id.toString());
+                                 localStorage.setItem('shownNotifications', JSON.stringify(shownNotifications));
+                             }, index * 500); // Stagger the toasts
+                         });
+                     }
+                 }
+             })
+             .catch(error => {
+                 console.error('Error fetching notifications:', error);
+             });
+     }
+
+    // Function to mark notification as read (global scope for onclick)
+    window.markNotificationAsRead = function(notificationId, toastElement = null) {
+        fetch(`/notifications/${notificationId}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+         .then(data => {
+              updateUserNotificationCount();
+              if (toastElement) {
+                  toastElement.style.animation = 'slideOutRight 0.3s ease-in';
+                  setTimeout(() => toastElement.remove(), 300);
+                  showSuccessToast('Notification marked as read!');
+                  
+                  // Remove from shown notifications so it can appear again if needed
+                  const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
+                  const updatedShown = shownNotifications.filter(id => id !== notificationId.toString());
+                  localStorage.setItem('shownNotifications', JSON.stringify(updatedShown));
+              }
+          })
+        .catch(error => {
+             console.error('Error marking notification as read:', error);
+         });
+     };
 
     // Function to update chat unread count
     function updateChatUnreadCount() {
@@ -133,15 +279,72 @@
         }
     }
 
-    // Update count on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        if (badge) {
-            updateUserNotificationCount();
-        }
-        if (chatBadge) {
-            updateChatUnreadCount();
-        }
-    });
+    // Function to show simple success toast
+     function showSuccessToast(message) {
+         let toastContainer = document.getElementById('notification-toast-container');
+         if (!toastContainer) {
+             toastContainer = document.createElement('div');
+             toastContainer.id = 'notification-toast-container';
+             toastContainer.style.cssText = `
+                 position: fixed;
+                 top: 20px;
+                 right: 20px;
+                 z-index: 9999;
+                 max-width: 350px;
+             `;
+             document.body.appendChild(toastContainer);
+         }
+
+         const toast = document.createElement('div');
+         toast.className = 'toast show';
+         toast.style.cssText = `
+             margin-bottom: 10px;
+             background: #d4edda;
+             border: 1px solid #c3e6cb;
+             border-radius: 8px;
+             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+             animation: slideInRight 0.3s ease-out;
+         `;
+         
+         toast.innerHTML = `
+             <div class="toast-body" style="padding: 12px; color: #155724;">
+                 <i class="fas fa-check-circle me-2"></i>
+                 ${message}
+                 <button type="button" class="btn-close ms-auto" onclick="this.closest('.toast').remove()" style="float: right;"></button>
+             </div>
+         `;
+
+         toastContainer.appendChild(toast);
+
+         // No auto-remove - only manual close
+     }
+
+     // Event listener for notification bell click
+     if (notificationBell) {
+         notificationBell.addEventListener('click', function(e) {
+             e.preventDefault();
+             showRecentNotificationsAsToasts();
+             // Navigate to notifications page after showing toasts
+             setTimeout(() => {
+                 window.location.href = '/notifications';
+             }, 1500);
+         });
+     }
+
+    // Update count on page load and show notifications as toasts
+     document.addEventListener('DOMContentLoaded', function() {
+         if (badge) {
+             updateUserNotificationCount();
+         }
+         if (chatBadge) {
+             updateChatUnreadCount();
+         }
+         
+         // Show recent notifications as toasts after a short delay
+         setTimeout(() => {
+             showRecentNotificationsAsToasts();
+         }, 2000);
+     });
 
     // Update count every 30 seconds
     if (badge) {

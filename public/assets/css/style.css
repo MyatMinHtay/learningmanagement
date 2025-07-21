@@ -470,6 +470,23 @@
     border-radius: 5px;
 }
 
+.role-btn{
+    border: 3px solid var(--primary);
+    color: var(--light);
+}
+
+.role-btn.active{
+    background-color: var(--primary);
+    color: var(--light);
+}
+
+.loginformContainer.student-theme{
+    background-color: #34417b;
+}
+
+.loginformContainer.teacher-theme{
+    background-color: #3248d0;
+}
 /* End Login Css  */
 
 /* Start Course CSS */

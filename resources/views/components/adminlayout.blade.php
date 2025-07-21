@@ -24,6 +24,9 @@
 
       {{-- Summer note CSS1 JS 1  --}}
       <link href="{{ asset('./assets/summernote/summernote-bs5.min.css') }}" rel="stylesheet" type="text/css">
+
+      {{-- toast noti css 1 js 1  --}}
+    <link href="{{ asset('./assets/css/toastify.min.css') }}" rel="stylesheet"  type="text/css">
     <!-- custom css -->
     <link rel="stylesheet" href="{{ asset('./assets/css/admin.css') }}" type="text/css">
     {{-- <link rel="stylesheet" href="{{ asset('./assets/css/style.css') }}" type="text/css"> --}}
@@ -58,5 +61,8 @@
 
     {{-- summer note js 1  --}}
     <script src="{{ asset('./assets/summernote/summernote-bs5.min.js') }}" type="text/javascript"></script>
+
+    {{-- toast noti css 1 js 1  --}}
+    <script src="{{ asset('./assets/js/toastify.min.js') }}" type="text/javascript"></script>
 </body>
 </html>

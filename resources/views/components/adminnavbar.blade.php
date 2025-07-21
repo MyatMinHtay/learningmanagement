@@ -1,181 +1,99 @@
 <div class="container-fluid">
-     <nav class="navbar bg-body-tertiary sticky-top customnavbar mt-2">
-          <div class="container-fluid customnavbarchild">
-
-               <div class="navbar-toggler" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
-                    aria-controls="offcanvasNavbar">
-                    <i class="fa-solid fa-bars"></i>
-               </div>
-
-
+     <nav class="navbar bg-body-tertiary sticky-top">
+          <div class="container-fluid">
                <a class="navbar-brand fontcolor" href="/">Learning Management</a>
-
-               <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar"
-                    aria-labelledby="offcanvasNavbarLabel">
-                    <div class="offcanvas-header">
-                         <div class="userimgcontainer" style="background: url('{{ asset(auth()->user()->userphoto) }}'); background-position: center;
-                         background-repeat: no-repeat;
-                         background-size: cover;">
-                              {{-- user photo --}}
-                         </div>
-                         <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{ auth()->user()->username }}
-                              ({{ auth()->user()->role->role }}) </h5>
-
-                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                              aria-label="Close"></button>
+               
+               <div class="d-flex align-items-center">
+                    <div class="userimgcontainer me-2" style="background: url('{{ asset(auth()->user()->userphoto) }}'); background-position: center; background-repeat: no-repeat; background-size: cover; width: 40px; height: 40px; border-radius: 50%;">
+                         {{-- user photo --}}
                     </div>
-                    <div class="offcanvas-body">
-
-
-                         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-
-                              @if (auth()->user()->role->role == 'student')
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('student.courses', auth()->user()->id) }}">
-
-                                             <i class="fa-solid fa-c fs-5 icon"></i>
-                                             Courses</a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('assignments.index') }}">
-
-                                             <i class="fa-solid fa-a fs-5 icon"></i>
-                                             Assignments</a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('student.quizzes', auth()->user()->id) }}">
-
-                                             <i class="fa-solid fa-q fs-5 icon"></i>
-                                             Quizzes</a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link position-relative" href="{{ route('chat.index') }}">
-                                             <i class="fas fa-comments fs-5 icon"></i>
-                                             Chat
-                                             <span id="admin-chat-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                                                  0
-                                             </span>
-                                        </a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link position-relative" href="{{ route('notifications.index') }}">
-                                             <i class="fas fa-bell fs-5 icon"></i>
-                                             Notifications
-                                             <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                                                  0
-                                             </span>
-                                        </a>
-                                   </li>
-                              @endif
-
-                              @if (auth()->user()->role->role == 'teacher')
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="/admin/courses">
-
-                                             <i class="fa-solid fa-c fs-5 icon"></i>
-                                             Courses</a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('assignments.index') }}">
-
-                                             <i class="fa-solid fa-a fs-5 icon"></i>
-                                             Assignments</a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('lessons.index') }}">
-
-                                             <i class="fa-solid fa-l fs-5 icon"></i>
-                                             Lessons</a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('quizzes.index') }}">
-
-                                             <i class="fa-solid fa-q fs-5 icon"></i>
-                                             Quizs</a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link position-relative" href="{{ route('chat.index') }}">
-                                             <i class="fas fa-comments fs-5 icon"></i>
-                                             Chat
-                                             <span id="admin-chat-badge-teacher" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                                                  0
-                                             </span>
-                                        </a>
-                                   </li>
-
-                                   <li class="nav-item">
-                                        <a class="nav-link position-relative" href="{{ route('notifications.index') }}">
-                                             <i class="fas fa-bell fs-5 icon"></i>
-                                             Notifications
-                                             <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                                                  0
-                                             </span>
-                                        </a>
-                                   </li>
-                              @endif
-
-                              @if (auth()->user()->role->role == 'adminstrator')
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="/admin/roles">
-                                             <i class="fa-solid fa-r fs-5 icon"></i>
-                                             Roles</a>
-                                   </li>
-                                   <li class="nav-item">
-                                        <a class="nav-link" href="/admin/users">
-                                             <i class="fa-solid fa-u fs-5 icon"></i>
-                                             Users</a>
-                                   </li>
-                              @endif
-
-                              
-
-                              <li class="nav-item">
-                                   <a class="nav-link" href="/logout">
-                                        <i class="fa-solid fa-circle-chevron-left fs-5 icon"></i>
-                                        Logout</a>
-                              </li>
-
-
-
-
-
-
-                         </ul>
-
-                    </div>
+                    <span class="me-3">{{ auth()->user()->username }} ({{ auth()->user()->role->role }})</span>
+                    <a href="/logout" class="btn btn-outline-danger btn-sm">
+                         <i class="fa-solid fa-circle-chevron-left"></i> Logout
+                    </a>
                </div>
           </div>
+     </nav>
+     
+     <!-- Menu Buttons -->
+     <nav class="navbar bg-light border-bottom">
+          <form class="container-fluid justify-content-start">
+
+               @if (auth()->user()->role->role == 'student')
+                    <a href="{{ route('student.courses', auth()->user()->id) }}" class="btn btn-outline-primary me-2" type="button">
+                         <i class="fa-solid fa-c"></i> Courses
+                    </a>
+                    <a href="{{ route('assignments.index') }}" class="btn btn-outline-success me-2" type="button">
+                         <i class="fa-solid fa-a"></i> Assignments
+                    </a>
+                    <a href="{{ route('student.quizzes', auth()->user()->id) }}" class="btn btn-outline-info me-2" type="button">
+                         <i class="fa-solid fa-q"></i> Quizzes
+                    </a>
+                    <a href="{{ route('chat.index') }}" class="btn btn-outline-secondary me-2 position-relative" type="button">
+                         <i class="fas fa-comments"></i> Chat
+                         <span id="admin-chat-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
+                    </a>
+                    <a href="{{ route('notifications.index') }}" class="btn btn-outline-warning me-2 position-relative" type="button">
+                         <i class="fas fa-bell"></i> Notifications
+                         <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
+                    </a>
+               @endif
+
+               @if (auth()->user()->role->role == 'teacher')
+                    <a href="/admin/courses" class="btn btn-outline-primary me-2" type="button">
+                         <i class="fa-solid fa-c"></i> Courses
+                    </a>
+                    <a href="{{ route('assignments.index') }}" class="btn btn-outline-success me-2" type="button">
+                         <i class="fa-solid fa-a"></i> Assignments
+                    </a>
+                    <a href="{{ route('lessons.index') }}" class="btn btn-outline-info me-2" type="button">
+                         <i class="fa-solid fa-l"></i> Lessons
+                    </a>
+                    <a href="{{ route('quizzes.index') }}" class="btn btn-outline-warning me-2" type="button">
+                         <i class="fa-solid fa-q"></i> Quizzes
+                    </a>
+                    <a href="{{ route('chat.index') }}" class="btn btn-outline-secondary me-2 position-relative" type="button">
+                         <i class="fas fa-comments"></i> Chat
+                         <span id="admin-chat-badge-teacher" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
+                    </a>
+                    <a href="{{ route('notifications.index') }}" class="btn btn-outline-dark me-2 position-relative" type="button">
+                         <i class="fas fa-bell"></i> Notifications
+                         <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
+                    </a>
+               @endif
+
+               @if (auth()->user()->role->role == 'adminstrator')
+                    <a href="/admin/roles" class="btn btn-outline-primary me-2" type="button">
+                         <i class="fa-solid fa-r"></i> Roles
+                    </a>
+                    <a href="/admin/users" class="btn btn-outline-success me-2" type="button">
+                         <i class="fa-solid fa-u"></i> Users
+                    </a>
+                    
+                    <!-- Admin Report Tables -->
+                    <div class="btn-group me-2" role="group">
+                         <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="fa-solid fa-table"></i> Reports
+                         </button>
+                         <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="/admin/reports/courses"><i class="fa-solid fa-c"></i> Created Course Table</a></li>
+                              <li><a class="dropdown-item" href="/admin/reports/quizzes"><i class="fa-solid fa-q"></i> Created Quiz Table</a></li>
+                              <li><a class="dropdown-item" href="/admin/reports/quiz-submissions"><i class="fa-solid fa-clipboard-check"></i> Submitted Quiz Table</a></li>
+                              <li><a class="dropdown-item" href="/admin/reports/assignments"><i class="fa-solid fa-a"></i> Created Assignment Table</a></li>
+                              <li><a class="dropdown-item" href="/admin/reports/assignment-submissions"><i class="fa-solid fa-file-text"></i> Submitted Assignment Table</a></li>
+                         </ul>
+                    </div>
+               @endif
+               
+          </form>
      </nav>
 </div>
 
 
 
 
-@if (session('success'))
-<x-alert type='success'>{{ session('success') }}</x-alert>
-@endif
-
-@if (session('warning'))
-<x-alert type='warning'>{{ session('warning') }}</x-alert>
-@endif
-
-@if (session('danger'))
-<x-alert type='danger'>{{ session('danger') }}</x-alert>
-@endif
-
-@if(session('error'))
-<x-alert type='danger'>{{ session('error') }}</x-alert>
-@endif
-
-<x-showerror name="error"></x-showerror>
+<!-- Include Toastify Notifications -->
+<x-toastify-notifications />
 
 <script>
 // Function to update notification count

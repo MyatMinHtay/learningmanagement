@@ -269,7 +269,7 @@ class AuthController extends Controller
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            return redirect('/');
+            return redirect('/')->with('success',"Good Bye");
 
         } catch (Exception $e) {
             Log::error('Error in logout: ' . $e->getMessage());

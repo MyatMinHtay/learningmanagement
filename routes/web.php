@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
+    Route::get('/notifications/recent', [NotificationController::class, 'getRecentNotifications'])->name('notifications.recent');
     
     // Chat System
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
@@ -171,5 +172,14 @@ Route::middleware(['auth', 'admincheck:users'])->group(function () {
         Route::post('/update/{role:role}', [SystemRoleController::class, 'updaterole'])->where('role', '[A-z\d\-_]+');
         Route::get('/edit/{role:role}', [SystemRoleController::class, 'editrole'])->where('role', '[A-z\d\-_]+');
         Route::get('/delete/{role:role}', [SystemRoleController::class, 'deleterole'])->where('role', '[A-z\d\-_]+');
+    });
+    
+    // Admin Report Tables
+    Route::prefix('admin/reports')->middleware('admincheck:admins')->group(function () {
+        Route::get('/courses', [CourseController::class, 'reportTable'])->name('admin.reports.courses');
+        Route::get('/quizzes', [QuizController::class, 'reportTable'])->name('admin.reports.quizzes');
+        Route::get('/quiz-submissions', [QuizController::class, 'submissionReportTable'])->name('admin.reports.quiz-submissions');
+        Route::get('/assignments', [AssignmentController::class, 'reportTable'])->name('admin.reports.assignments');
+        Route::get('/assignment-submissions', [AssignmentController::class, 'submissionReportTable'])->name('admin.reports.assignment-submissions');
     });
 });

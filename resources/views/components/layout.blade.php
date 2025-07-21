@@ -32,6 +32,9 @@
        {{-- jquery ui css 1 js1  --}}
     <link href="{{ asset('./assets/css/jquery-ui.min.css') }}" rel="stylesheet"  type="text/css">
 
+    {{-- toast noti css 1 js 1  --}}
+    <link href="{{ asset('./assets/css/toastify.min.css') }}" rel="stylesheet"  type="text/css">
+
     <!-- Custom Stylesheet -->
     <link href="{{asset('/assets/css/style.css')}}" rel="stylesheet">
 </head>
@@ -59,10 +62,13 @@
     <script src="{{ asset('/assets/js/jquery.matchHeight.js') }}" type="text/javascript"></script>
 
     
-
+    {{-- toast noti css 1 js 1  --}}
+    <script src="{{ asset('./assets/js/toastify.min.js') }}" type="text/javascript"></script>
 
     <!-- Custom Javascript -->
     <script src="{{asset('/assets/js/main.js')}}"></script>
+    
+ 
 </body>
 
 </html>

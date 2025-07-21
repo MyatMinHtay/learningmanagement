@@ -353,7 +353,7 @@ class CourseController extends Controller
     {
         try {
             $studentCourses = $student->courses()->paginate(20);
-
+            
             return view('admin.student.courses', compact('studentCourses'));
 
         } catch (Exception $e) {
@@ -362,6 +362,42 @@ class CourseController extends Controller
         }
     }
 
-
+    public function reportTable(Request $request)
+    {
+        try {
+            $query = Course::with(['creator', 'category', 'students']);
+            
+            // Filter by teacher/creator
+            if ($request->has('teacher') && $request->teacher != '') {
+                $query->where('created_by', $request->teacher);
+            }
+            
+            // Filter by category
+            if ($request->has('category') && $request->category != '') {
+                $query->where('category_id', $request->category);
+            }
+            
+            // Filter by date range
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+            
+            $courses = $query->latest()->paginate(15);
+            $teachers = User::whereHas('role', function($q) {
+                $q->where('role', 'teachers');
+            })->get();
+            $categories = CourseCategory::all();
+            
+            return view('admin.reports.courses', compact('courses', 'teachers', 'categories'));
+            
+        } catch (Exception $e) {
+            Log::error('Error in course report table: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load course reports. Please try again.');
+        }
+    }
 
 }
