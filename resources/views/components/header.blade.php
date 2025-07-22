@@ -54,12 +54,12 @@
                             <a href="/profile/{{auth()->user()->username}}" class="dropdown-item">Profile</a>
                             
                             <a href="/admin/dashboard" class="dropdown-item">Dashboard</a>
-                            <a href="/logout" class="dropdown-item">Logout</a>
+                            <a href="#" class="dropdown-item" onclick="handleLogout()">Logout</a>
                             
                         </div>
                     </div>
                 @else 
-                    <a href="/login" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">Login<i class="fa fa-arrow-right ms-3"></i></a>
+                    <a href="{{ route('login') }}" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">Login<i class="fa fa-arrow-right ms-3"></i></a>
                 @endauth
                
             </div>
@@ -234,31 +234,66 @@
 
     // Function to mark notification as read (global scope for onclick)
     window.markNotificationAsRead = function(notificationId, toastElement = null) {
+        // Check if user is authenticated
+        @guest
+            alert('You must be logged in to mark notifications as read.');
+            return;
+        @endguest
+        
+        // Check if CSRF token exists
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (!csrfToken) {
+            alert('CSRF token not found. Please refresh the page.');
+            return;
+        }
+        
         fetch(`/notifications/${notificationId}/read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
-         .then(data => {
-              updateUserNotificationCount();
-              if (toastElement) {
-                  toastElement.style.animation = 'slideOutRight 0.3s ease-in';
-                  setTimeout(() => toastElement.remove(), 300);
-                  showSuccessToast('Notification marked as read!');
-                  
-                  // Remove from shown notifications so it can appear again if needed
-                  const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
-                  const updatedShown = shownNotifications.filter(id => id !== notificationId.toString());
-                  localStorage.setItem('shownNotifications', JSON.stringify(updatedShown));
-              }
-          })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                throw new Error('Server returned non-JSON response');
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                updateUserNotificationCount();
+                if (toastElement) {
+                    toastElement.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => toastElement.remove(), 300);
+                    showSuccessToast('Notification marked as read!');
+                    
+                    // Remove from shown notifications so it can appear again if needed
+                    const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
+                    const updatedShown = shownNotifications.filter(id => id !== notificationId.toString());
+                    localStorage.setItem('shownNotifications', JSON.stringify(updatedShown));
+                }
+            } else {
+                alert('Failed to mark notification as read: ' + (data.message || 'Unknown error'));
+            }
+        })
         .catch(error => {
-             console.error('Error marking notification as read:', error);
-         });
-     };
+            alert('Failed to mark notification as read. Please try again.');
+        });
+    };
+    
+    // Clear notification localStorage on logout
+    window.clearNotificationStorage = function() {
+        localStorage.removeItem('shownNotifications');
+    };
 
     // Function to update chat unread count
     function updateChatUnreadCount() {
@@ -352,6 +387,12 @@
     }
     if (chatBadge) {
         setInterval(updateChatUnreadCount, 30000);
+    }
+    
+    // Handle logout with notification storage cleanup
+    function handleLogout() {
+        clearNotificationStorage();
+        window.location.href = '/logout';
     }
     
     </script>

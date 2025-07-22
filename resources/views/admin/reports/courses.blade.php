@@ -71,9 +71,11 @@
                                         <th scope="row">{{ $loop->iteration + ($courses->currentPage() - 1) * $courses->perPage() }}</th>
                                         <td>
                                             <strong>{{ $course->name }}</strong>
-                                            @if($course->description)
-                                                <br><small class="text-muted">{{ Str::limit($course->description, 50) }}</small>
+                                           @if($course->description)
+                                                <br>
+                                                <small class="text-muted">{{ Str::limit(strip_tags($course->description), 50) }}</small>
                                             @endif
+
                                         </td>
                                         <td>
                                             @if($course->category)

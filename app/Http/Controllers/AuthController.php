@@ -33,8 +33,6 @@ class AuthController extends Controller
                 $user = null;
             }
 
-          
-
             $teachers = User::with('role')->whereHas('role', function ($query) {
                 $query->where('role', 'teacher');
             })->limit(4)->get();
@@ -140,6 +138,28 @@ class AuthController extends Controller
     {
         try {
             return view('auth/login');
+
+        } catch (Exception $e) {
+            Log::error('Error in login view: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load login form. Please try again.');
+        }
+    }
+
+    public function adminlogin()
+    {
+        try {
+            return view('auth/adminlogin');
+
+        } catch (Exception $e) {
+            Log::error('Error in login view: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load login form. Please try again.');
+        }
+    }
+
+    public function teacherlogin()
+    {
+        try {
+            return view('auth/teacherlogin');
 
         } catch (Exception $e) {
             Log::error('Error in login view: ' . $e->getMessage());

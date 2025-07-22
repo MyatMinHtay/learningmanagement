@@ -69,8 +69,8 @@
                     <!-- Results Summary -->
                     <div class="alert alert-info">
                         <strong>Total Submissions:</strong> {{ $submissions->total() }} submissions found
-                        @if($submissions->count() > 0)
-                            | <strong>Average Grade:</strong> {{ number_format($submissions->avg('grade'), 2) }}%
+                        @if($submissions->count() > 0 && $averagePercentage > 0)
+                            | <strong>Average Score:</strong> {{ number_format($averagePercentage, 2) }}%
                         @endif
                     </div>
 
@@ -86,7 +86,7 @@
                                     <th scope="col">Grade</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Submitted Date</th>
-                                    <th scope="col">Time Taken</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody>
@@ -122,45 +122,39 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($submission->grade !== null && is_numeric($submission->grade))
+                                            @if($submission->is_completed && $submission->quiz)
                                                 @php
+                                                    $totalMarks = $submission->quiz->calculateTotalMarks();
+                                                    $percentage = $totalMarks > 0 ? ($submission->score / $totalMarks) * 100 : 0;
                                                     $gradeClass = 'bg-success';
-                                                    if($submission->grade < 60) $gradeClass = 'bg-danger';
-                                                    elseif($submission->grade < 80) $gradeClass = 'bg-warning';
+                                                    if($percentage < 60) $gradeClass = 'bg-danger';
+                                                    elseif($percentage < 80) $gradeClass = 'bg-warning';
                                                 @endphp
-                                                <span class="badge {{ $gradeClass }}">{{ number_format($submission->grade, 1) }}%</span>
+                                                <span class="badge {{ $gradeClass }}">{{ number_format($percentage, 1) }}%</span>
+                                                <br><small class="text-muted">{{ $submission->grade }}</small>
                                             @else
-                                                <span class="badge bg-secondary">Not Graded</span>
+                                                <span class="badge bg-secondary">Not Completed</span>
                                             @endif
                                         </td>
                                         <td>
-                                            @if($submission->is_completed && $submission->completed_at)
+                                            @if($submission->created_at)
                                                 <span class="badge bg-success">Completed</span>
                                             @else
                                                 <span class="badge bg-warning">In Progress</span>
                                             @endif
                                         </td>
                                         <td>
-                                            @if($submission->completed_at)
-                                                {{ $submission->completed_at->format('M d, Y H:i') }}
+                                            @if($submission->created_at)
+                                                {{ $submission->created_at->format('M d, Y H:i') }}
                                             @else
                                                 <span class="text-muted">Not completed</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            @if($submission->completed_at && $submission->started_at)
-                                                @php
-                                                    $timeTaken = $submission->started_at->diffInMinutes($submission->completed_at);
-                                                @endphp
-                                                {{ $timeTaken }} minutes
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
+                                       
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center py-4">
+                                        <td colspan="7" class="text-center py-4">
                                             <div class="text-muted">
                                                 <i class="fa fa-inbox fa-3x mb-3"></i>
                                                 <p>No quiz submissions found matching your criteria.</p>

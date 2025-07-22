@@ -36,7 +36,9 @@ Route::get('/courses/{course:id}', [CourseController::class, 'show'])->name('cou
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'create'])->name('register');
     Route::post('/register', [UserController::class, 'createuser'])->name('postregister');
-    Route::get('/login', [AuthController::class, 'login'])->name('login');
+    Route::get('/studentlogin', [AuthController::class, 'login'])->name('login');
+    Route::get('/adminlogin', [AuthController::class, 'adminlogin'])->name('admin.login');
+    Route::get('teacherlogin',[AuthController::class,'teacherlogin'])->name('teacher.login');
     Route::post('/login', [AuthController::class, 'postLogin'])->name('page.login');
 });
 

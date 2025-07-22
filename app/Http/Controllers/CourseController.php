@@ -388,7 +388,7 @@ class CourseController extends Controller
             
             $courses = $query->latest()->paginate(15);
             $teachers = User::whereHas('role', function($q) {
-                $q->where('role', 'teachers');
+                $q->where('role', 'teacher');
             })->get();
             $categories = CourseCategory::all();
             

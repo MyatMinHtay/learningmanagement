@@ -5,9 +5,11 @@
             <h6 class="section-title bg-white text-center text-primary px-3">Instructors</h6>
             <h1 class="mb-5">Expert Instructors</h1>
         </div>
-        <div class="row g-4">
+
+        <div class="row justify-content-center g-4 my-5">
 
             @foreach ($teachers as $teacher)
+            @if($teacher->username == 'Dr Kyaw Moe Min')
             <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                 <div class="team-item bg-white shadow-sm rounded-3 overflow-hidden h-100 position-relative">
                     <div class="overflow-hidden position-relative">
@@ -44,6 +46,54 @@
                     </div>
                 </div>
             </div>  
+            @endif
+            @endforeach
+            
+
+        </div>
+
+        <div class="row justify-content-evenly g-4">
+
+            @foreach ($teachers as $teacher)
+            @if ($teacher->username != 'Dr Kyaw Moe Min')
+                <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="team-item bg-white shadow-sm rounded-3 overflow-hidden h-100 position-relative">
+                        <div class="overflow-hidden position-relative">
+                            <img class="img-fluid w-100" style="height: 250px; object-fit: cover;" 
+                                src="{{$teacher->userphoto ? asset($teacher->userphoto) : asset('/assets/avatars/user.png')}}" 
+                                alt="{{$teacher->username}}">
+                            <div class="team-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                                <div class="team-social d-flex">
+                                    <!-- You can add social media links here if available -->
+                                    <a class="btn btn-primary btn-square mx-1" href="#" style="display: none;">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                    <a class="btn btn-primary btn-square mx-1" href="#" style="display: none;">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                    <a class="btn btn-primary btn-square mx-1" href="#" style="display: none;">
+                                        <i class="fab fa-linkedin-in"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="text-center p-4">
+                            <h5 class="mb-2 text-dark">{{$teacher->username}}</h5>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-user-tie me-2"></i>{{$teacher->role->role}}
+                            </p>
+                            @if($teacher->email)
+                                <p class="text-muted mb-0 mt-2">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    <small>{{$teacher->email}}</small>
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                </div>  
+            @endif
+            
             @endforeach
 
         </div>

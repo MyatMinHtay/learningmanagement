@@ -185,7 +185,7 @@ class NotificationController extends Controller
             $request->validate([
                 'course_id' => 'required|exists:courses,id',
                 'type' => 'required|in:quiz_deadline,assignment_deadline',
-                'assignment_title' => 'required_if:type,assignment_deadline|string|max:255',
+                'assignment_title' => ['nullable', 'string', 'max:255'],
                 'title' => 'required|string|max:255',
                 'message' => 'required|string',
                 'deadline_date' => 'required|date|after:now',
@@ -217,6 +217,8 @@ class NotificationController extends Controller
                 'auto_reminders_enabled' => true
             ];
 
+            
+
             // Add assignment title if it's an assignment deadline
             if ($request->type === 'assignment_deadline') {
                 $notificationData['assignment_title'] = $request->assignment_title;
@@ -241,8 +243,8 @@ class NotificationController extends Controller
                 ->with('success', $successMessage);
 
         } catch (Exception $e) {
-            Log::error('Error in storeDeadlineNotification: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to create deadline notification. Please try again.');
+            
+            return redirect()->back()->with('error', 'Failed to create deadline notification.' . $e->getMessage());
         }
     }
 

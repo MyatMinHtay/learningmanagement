@@ -269,7 +269,7 @@ class AssignmentController extends Controller
             
             $assignments = $query->latest()->paginate(15);
             $teachers = \App\Models\User::whereHas('role', function($q) {
-                $q->where('role', 'teachers');
+                $q->where('role', 'teacher');
             })->get();
             $courses = Course::all();
             
@@ -326,10 +326,11 @@ class AssignmentController extends Controller
 
            
             $students = \App\Models\User::whereHas('role', function($q) {
-                $q->where('role', 'students');
+                $q->where('role', 'student');
             })->get();
+
             $teachers = \App\Models\User::whereHas('role', function($q) {
-                $q->where('role', 'teachers');
+                $q->where('role', 'teacher');
             })->get();
             $courses = Course::all();
             

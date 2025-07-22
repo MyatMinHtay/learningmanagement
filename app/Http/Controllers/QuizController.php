@@ -462,6 +462,116 @@ class QuizController extends Controller
         }
     }
 
+    public function reportTable(Request $request)
+    {
+        try {
+            $query = Quiz::with(['course', 'course.creator']);
+            
+            // Filter by teacher/creator
+            if ($request->has('teacher') && $request->teacher != '') {
+                $query->where('created_by', $request->teacher);
+            }
+            
+            // Filter by course
+            if ($request->has('course') && $request->course != '') {
+                $query->where('course_id', $request->course);
+            }
+            
+            // Filter by date range
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+            
+            $quizzes = $query->latest()->paginate(15);
+            $teachers = User::whereHas('role', function($q) {
+                $q->where('role', 'teacher');
+            })->get();
+            $courses = Course::all();
+            
+            return view('admin.reports.quizzes', compact('quizzes', 'teachers', 'courses'));
+            
+        } catch (Exception $e) {
+            Log::error('Error in quiz report table: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load quiz reports. Please try again.');
+        }
+    }
+
+    public function submissionReportTable(Request $request)
+    {
+        try {
+            $query = QuizAttempt::with(['user', 'quiz', 'quiz.course']);
+            
+            // Filter by student
+            if ($request->has('student') && $request->student != '') {
+                $query->where('student_id', $request->student);
+            }
+            
+            // Filter by quiz
+            if ($request->has('quiz') && $request->quiz != '') {
+                $query->where('quiz_id', $request->quiz);
+            }
+            
+            // Filter by course
+            if ($request->has('course') && $request->course != '') {
+                $query->whereHas('quiz', function($q) use ($request) {
+                    $q->where('course_id', $request->course);
+                });
+            }
+            
+            // Filter by grade range (using percentage calculation)
+            if ($request->has('grade_min') && $request->grade_min != '') {
+                $query->whereRaw('(score / (SELECT SUM(marks) FROM questions WHERE quiz_id = quiz_attempts.quiz_id)) * 100 >= ?', [$request->grade_min]);
+            }
+            
+            if ($request->has('grade_max') && $request->grade_max != '') {
+                $query->whereRaw('(score / (SELECT SUM(marks) FROM questions WHERE quiz_id = quiz_attempts.quiz_id)) * 100 <= ?', [$request->grade_max]);
+            }
+            
+            // Filter by date range
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+            
+            $submissions = $query->latest()->paginate(15);
+            
+            // Calculate average percentage for completed submissions
+            $completedSubmissions = $query->where('is_completed', true)->get();
+            $averagePercentage = 0;
+            
+            if ($completedSubmissions->count() > 0) {
+                $totalPercentage = 0;
+                foreach ($completedSubmissions as $submission) {
+                    $totalMarks = $submission->quiz->calculateTotalMarks();
+                    if ($totalMarks > 0) {
+                        $percentage = ($submission->score / $totalMarks) * 100;
+                        $totalPercentage += $percentage;
+                    }
+                }
+                $averagePercentage = $totalPercentage / $completedSubmissions->count();
+            }
+            
+            $students = User::whereHas('role', function($q) {
+                $q->where('role', 'student');
+            })->get();
+            $quizzes = Quiz::with('course')->get();
+            $courses = Course::all();
+            
+            return view('admin.reports.quiz-submissions', compact('submissions', 'students', 'quizzes', 'courses', 'averagePercentage'));
+            
+        } catch (Exception $e) {
+            Log::error('Error in quiz submission report table: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load quiz submission reports. Please try again.');
+        }
+    }
+
 
 
 }
