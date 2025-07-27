@@ -40,7 +40,7 @@
                @endif
 
                @if (auth()->user()->role->role == 'teacher')
-                    <a href="/admin/courses" class="btn {{ request()->is('admin/courses*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
+                    <a href="{{ route('admincourses') }}" class="btn {{ request()->is('admin/courses*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
                          <i class="fa-solid fa-c"></i> Courses
                     </a>
                     <a href="{{ route('assignments.index') }}" class="btn {{ request()->routeIs('assignments.*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">

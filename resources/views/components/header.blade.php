@@ -53,7 +53,15 @@
                         <div class="dropdown-menu fade-down m-0 show">
                             <a href="/profile/{{auth()->user()->username}}" class="dropdown-item">Profile</a>
                             
+
+                            @if(auth()->user()->role->role == 'adminstrator')
                             <a href="/admin/dashboard" class="dropdown-item">Dashboard</a>
+                            @elseif(auth()->user()->role->role == 'student')
+                            <a href="/student/dashboard" class="dropdown-item">Dashboard</a>
+                            @elseif(auth()->user()->role->role == 'teacher')
+                            <a href="/teacher/dashboard" class="dropdown-item">Dashboard</a>
+                            @endif
+                            
                             <a href="#" class="dropdown-item" onclick="handleLogout()">Logout</a>
                             
                         </div>

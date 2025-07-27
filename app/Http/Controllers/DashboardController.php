@@ -14,33 +14,33 @@ use Exception;
 
 class DashboardController extends Controller
 {
-    public function show()
+    public function adminshow()
     {
         try {
-            if (Auth::check()) {
-                $users = User::count();
-                $systemroles = SystemRole::all();
-                
-                // Get user permissions from role
-                $userPermissions = explode(',', auth()->user()->role->permissions);
-                
-                // Check permissions instead of roles
-                if (in_array('all', $userPermissions) || in_array('admins', $userPermissions)) {
-                    return redirect()->route('users');
-                } else if (in_array('students', $userPermissions)) {
-                    return redirect()->route('students.dashboard');
-                } else if (in_array('teachers', $userPermissions)) {
-                    return redirect()->route('admincourses');
-                } else {
-                    return back()->with('warning', 'Access denied! You do not have the required permissions to access this page.');
-                }
-            } else {
-                return redirect('/login')->with('warning', 'access deined! Only Admin Can Access This Page');
-            }
+            $users = User::count();
+            $systemroles = SystemRole::all();
+            
+            // Admin dashboard - redirect to users management
+            return redirect()->route('users');
 
         } catch (Exception $e) {
-            Log::error('Error in dashboard show: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Unable to load dashboard. Please try again.');
+            Log::error('Error in admin dashboard: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load admin dashboard. Please try again.');
+        }
+    }
+
+    public function studentshow()
+    {
+        try {
+            $users = User::count();
+            $systemroles = SystemRole::all();
+            
+            // Student dashboard - redirect to student dashboard
+            return redirect()->route('students.dashboard');
+
+        } catch (Exception $e) {
+            Log::error('Error in student dashboard: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load student dashboard. Please try again.');
         }
     }
 

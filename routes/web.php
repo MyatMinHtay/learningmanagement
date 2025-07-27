@@ -49,6 +49,7 @@ Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth');
 // ========================================
 Route::middleware(['auth', 'admincheck:students'])->group(function () {
     // Student Dashboard
+    Route::get('/student/dashboard', [DashboardController::class, 'studentshow']);
     Route::get('/students/dashboard', [DashboardController::class, 'showStudentDashboard'])->name('students.dashboard');
     Route::get('/student/{student:id}/courses', [CourseController::class, 'showStudentCourses'])->name('student.courses');
     Route::get('/student/{student:id}/quizzes', [QuizController::class, 'index'])->name('student.quizzes');
@@ -76,7 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/courses/{course}/enroll', [CourseController::class, 'enrollJson']);
     
     // Assignment Management
-    Route::get('/admin/assignments/', [AssignmentController::class, 'showAssignments'])->name('assignments.index');
+    Route::get('/assignments/', [AssignmentController::class, 'showAssignments'])->name('assignments.index');
     Route::get('/admin/assignments/create', [AssignmentController::class, 'create'])->name('assignments.create');
     Route::post('/course/assignments', [AssignmentController::class, 'store'])->name('assignments.store');
     Route::get('/assignments/{assignment}/edit', [AssignmentController::class, 'edit'])->name('assignments.edit');
@@ -103,8 +104,10 @@ Route::middleware('auth')->group(function () {
 // TEACHER ROUTES
 // ========================================
 Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
+    // Teacher Dashboard
+    Route::get('/teacher/dashboard', [CourseController::class, 'adminindex']);
     // Course Management
-    Route::prefix('admin/courses')->group(function () {
+    Route::prefix('/courses')->group(function () {
         Route::get('/', [CourseController::class, 'adminindex'])->name('admincourses');
         Route::get('/create', [CourseController::class, 'create'])->name('courses.create');
         Route::post('/', [CourseController::class, 'store'])->name('courses.store');
@@ -124,7 +127,7 @@ Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
     });
     
     // Lesson Management
-    Route::prefix('admin/lessons')->group(function () {
+    Route::prefix('/lessons')->group(function () {
         Route::get('/', [LessonController::class, 'index'])->name('lessons.index');
         Route::get('/create', [LessonController::class, 'create'])->name('lessons.create');
         Route::post('/', [LessonController::class, 'store'])->name('lessons.store');
@@ -134,7 +137,7 @@ Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
     });
     
     // Quiz Management
-    Route::prefix('admin/quizzes')->group(function () {
+    Route::prefix('/quizzes')->group(function () {
         Route::get('/', [QuizController::class, 'adminindex'])->name('quizzes.index');
         Route::get('/create', [QuizController::class, 'create'])->name('quizzes.create');
         Route::post('/', [QuizController::class, 'store'])->name('quizzes.store');
@@ -152,9 +155,12 @@ Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
 // ADMIN ROUTES
 // ========================================
 Route::middleware(['auth', 'admincheck:users'])->group(function () {
-    // Admin Dashboard
-    Route::get('/admin/dashboard', [DashboardController::class, 'show']);
+    // Admin Dashboard (moved to specific admin middleware below)
+    
     Route::get('/students/{student}/courses', [CourseController::class, 'showStudentCourses']);
+    
+    // Admin Dashboard
+    Route::get('/admin/dashboard', [DashboardController::class, 'adminshow'])->middleware('admincheck:admins');
     
     // User Management
     Route::prefix('admin/users')->middleware('admincheck:admins')->group(function () {
