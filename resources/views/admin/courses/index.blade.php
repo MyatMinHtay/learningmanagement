@@ -5,7 +5,7 @@
 
         <div class="row my-3">
             <div class="col-md-6">
-                <form method="GET" action="{{ route('admincourses') }}" class="d-flex">
+                <form method="GET" action="{{ route('teachercourses') }}" class="d-flex">
                     <select name="category" class="form-control me-2">
                         <option value="">All Categories</option>
                         @foreach($categories as $category)

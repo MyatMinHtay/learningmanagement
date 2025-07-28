@@ -30,7 +30,7 @@ class DashboardController extends Controller
                 } else if (in_array('students', $userPermissions)) {
                     return redirect()->route('students.dashboard');
                 } else if (in_array('teachers', $userPermissions)) {
-                    return redirect()->route('admincourses');
+                    return redirect()->route('teachercourses');
                 } else {
                     return back()->with('warning', 'Access denied! You do not have the required permissions to access this page.');
                 }

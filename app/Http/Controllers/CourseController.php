@@ -19,6 +19,7 @@ use Exception;
 
 class CourseController extends Controller
 {
+
     public function index(Request $request)
     {
         try {
@@ -152,7 +153,7 @@ class CourseController extends Controller
         }
         
 
-        return redirect()->route('admincourses')->with('success', 'Course created successfully.');
+        return redirect()->route('teachercourses')->with('success', 'Course created successfully.');
     }
 
     public function edit(Course $course)

@@ -23,7 +23,7 @@
                     <a href="{{ route('student.courses', auth()->user()->id) }}" class="btn {{ request()->routeIs('student.courses') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
                          <i class="fa-solid fa-c"></i> Courses
                     </a>
-                    <a href="{{ route('assignments.index') }}" class="btn {{ request()->routeIs('assignments.*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">
+                    <a href="{{ route('student.assignments.index') }}" class="btn {{ request()->routeIs('assignments.*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">
                          <i class="fa-solid fa-a"></i> Assignments
                     </a>
                     <a href="{{ route('student.quizzes', auth()->user()->id) }}" class="btn {{ request()->routeIs('student.quizzes') ? 'btn-info' : 'btn-outline-info' }} me-2" type="button">
@@ -40,7 +40,7 @@
                @endif
 
                @if (auth()->user()->role->role == 'teacher')
-                    <a href="/admin/courses" class="btn {{ request()->is('admin/courses*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
+                    <a href="{{ route('teachercourses') }}" class="btn {{ request()->is('teacher/courses*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
                          <i class="fa-solid fa-c"></i> Courses
                     </a>
                     <a href="{{ route('assignments.index') }}" class="btn {{ request()->routeIs('assignments.*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">

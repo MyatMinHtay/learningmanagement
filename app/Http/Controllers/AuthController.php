@@ -27,11 +27,7 @@ class AuthController extends Controller
     public function index(Request $request)
     {
         try {
-            if (Auth::check()) {
-                $user = auth()->user();
-            } else {
-                $user = null;
-            }
+            
 
             $teachers = User::with('role')->whereHas('role', function ($query) {
                 $query->where('role', 'teacher');

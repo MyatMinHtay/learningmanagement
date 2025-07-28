@@ -76,8 +76,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/courses/{course}/enroll', [CourseController::class, 'enrollJson']);
     
     // Assignment Management
-    Route::get('/admin/assignments/', [AssignmentController::class, 'showAssignments'])->name('assignments.index');
-    Route::get('/admin/assignments/create', [AssignmentController::class, 'create'])->name('assignments.create');
+    Route::get('/student/assignments/', [AssignmentController::class, 'showAssignments'])->name('student.assignments.index');
+    Route::get('/teacher/assignments/', [AssignmentController::class, 'showAssignments'])->name('assignments.index');
+    Route::get('/teacher/assignments/create', [AssignmentController::class, 'create'])->name('assignments.create');
     Route::post('/course/assignments', [AssignmentController::class, 'store'])->name('assignments.store');
     Route::get('/assignments/{assignment}/edit', [AssignmentController::class, 'edit'])->name('assignments.edit');
     Route::patch('/assignments/{assignment}', [AssignmentController::class, 'update'])->name('assignments.update');
@@ -104,8 +105,8 @@ Route::middleware('auth')->group(function () {
 // ========================================
 Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
     // Course Management
-    Route::prefix('admin/courses')->group(function () {
-        Route::get('/', [CourseController::class, 'adminindex'])->name('admincourses');
+    Route::prefix('teacher/courses')->group(function () {
+        Route::get('/', [CourseController::class, 'adminindex'])->name('teachercourses');
         Route::get('/create', [CourseController::class, 'create'])->name('courses.create');
         Route::post('/', [CourseController::class, 'store'])->name('courses.store');
         Route::get('/{course}/edit', [CourseController::class, 'edit'])->name('courses.edit');
@@ -114,7 +115,7 @@ Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
     });
     
     // Course Categories Management
-    Route::prefix('admin/categories')->group(function () {
+    Route::prefix('teacher/categories')->group(function () {
         Route::get('/', [CourseCategoryController::class, 'index'])->name('categories.index');
         Route::get('/create', [CourseCategoryController::class, 'create'])->name('categories.create');
         Route::post('/', [CourseCategoryController::class, 'store'])->name('categories.store');
@@ -124,7 +125,7 @@ Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
     });
     
     // Lesson Management
-    Route::prefix('admin/lessons')->group(function () {
+    Route::prefix('teacher/lessons')->group(function () {
         Route::get('/', [LessonController::class, 'index'])->name('lessons.index');
         Route::get('/create', [LessonController::class, 'create'])->name('lessons.create');
         Route::post('/', [LessonController::class, 'store'])->name('lessons.store');
@@ -134,7 +135,7 @@ Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
     });
     
     // Quiz Management
-    Route::prefix('admin/quizzes')->group(function () {
+    Route::prefix('teacher/quizzes')->group(function () {
         Route::get('/', [QuizController::class, 'adminindex'])->name('quizzes.index');
         Route::get('/create', [QuizController::class, 'create'])->name('quizzes.create');
         Route::post('/', [QuizController::class, 'store'])->name('quizzes.store');
@@ -153,7 +154,9 @@ Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
 // ========================================
 Route::middleware(['auth', 'admincheck:users'])->group(function () {
     // Admin Dashboard
-    Route::get('/admin/dashboard', [DashboardController::class, 'show']);
+    Route::get('/admin/dashboard', [DashboardController::class, 'show'])->name('admin.dashboard');
+    Route::get('/teacher/dashboard', [DashboardController::class, 'show'])->name('teacher.dashboard');
+    Route::get('/student/dashboard', [DashboardController::class, 'show'])->name('student.dashboard');
     Route::get('/students/{student}/courses', [CourseController::class, 'showStudentCourses']);
     
     // User Management
