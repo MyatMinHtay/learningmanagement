@@ -11,21 +11,32 @@
     <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0">
         <a href="/" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
-            <h2 class="m-0 text-primary"><i class="fa fa-book me-3"></i>eLEARNING</h2>
+            <h2 class="m-0 text-primary"><i class="fa fa-book me-3"></i>Online Learning Platform</h2>
         </a>
         <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav ms-auto p-4 p-lg-0">
-                <a href="/" class="nav-item nav-link {{ Request::is('/') ? 'active' : '' }}">Home</a>
+                <a href="{{ route('homeslug') }}" class="nav-item nav-link {{ Request::is('/home') ? 'active' : '' }}">Home</a>
                 <a href="/about" class="nav-item nav-link {{ Request::is('about') ? 'active' : '' }}">About</a>
                 <a href="/courses" class="nav-item nav-link {{ Request::is('courses') ? 'active' : '' }}">Courses</a>
                 <a href="/contact" class="nav-item nav-link {{ Request::is('contact') ? 'active' : '' }}">Contact</a>
                 @auth
                     <!-- Chat Link -->
                     @if (
-                       auth()->user()->role->role == 'student' || auth()->user()->role->role == 'teacher'
+                       auth()->user()->role->role == 'student'
+                    )
+                        <a href="{{ route('student.chat.index') }}" class="nav-item nav-link position-relative" title="Chat">
+                            <i class="fas fa-comments"></i>
+                            <span id="chat-notification-badge" class="position-absolute badge badge-danger rounded-pill" style="display: none; font-size: 0.6rem; top: 8px; right: 8px;">
+                                0
+                            </span>
+                        </a>
+                    @endif
+
+                    @if (
+                       auth()->user()->role->role == 'teacher'
                     )
                         <a href="{{ route('chat.index') }}" class="nav-item nav-link position-relative" title="Chat">
                             <i class="fas fa-comments"></i>
@@ -37,9 +48,20 @@
 
                     <!-- Notifications Bell -->
                     @if (
-                       auth()->user()->role->role == 'student' || auth()->user()->role->role == 'teacher'
+                       auth()->user()->role->role == 'student'
                     )
-                        <a href="{{ route('notifications.index') }}" class="nav-item nav-link position-relative" title="Notifications" id="notification-bell">
+                        <a href="{{ route('student.notifications.index') }}" class="nav-item nav-link position-relative" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span id="user-notification-badge" class="position-absolute badge badge-danger rounded-pill" style="display: none; font-size: 0.6rem; top: 8px; right: 8px;">
+                                0
+                            </span>
+                        </a>
+                    @endif
+
+                    @if (
+                       auth()->user()->role->role == 'teacher'
+                    )
+                        <a href="{{ route('notifications.index') }}" class="nav-item nav-link position-relative" title="Notifications">
                             <i class="fas fa-bell"></i>
                             <span id="user-notification-badge" class="position-absolute badge badge-danger rounded-pill" style="display: none; font-size: 0.6rem; top: 8px; right: 8px;">
                                 0
@@ -133,7 +155,7 @@
     // Function to update notification count for regular users
     const badge = document.getElementById('user-notification-badge');
     const chatBadge = document.getElementById('chat-notification-badge');
-    const notificationBell = document.getElementById('notification-bell');
+
 
     
     function updateUserNotificationCount() {
@@ -362,17 +384,7 @@
          // No auto-remove - only manual close
      }
 
-     // Event listener for notification bell click
-     if (notificationBell) {
-         notificationBell.addEventListener('click', function(e) {
-             e.preventDefault();
-             showRecentNotificationsAsToasts();
-             // Navigate to notifications page after showing toasts
-             setTimeout(() => {
-                 window.location.href = '/notifications';
-             }, 1500);
-         });
-     }
+     
 
     // Update count on page load and show notifications as toasts
      document.addEventListener('DOMContentLoaded', function() {

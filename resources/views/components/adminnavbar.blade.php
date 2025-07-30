@@ -29,11 +29,11 @@
                     <a href="{{ route('student.quizzes', auth()->user()->id) }}" class="btn {{ request()->routeIs('student.quizzes') ? 'btn-info' : 'btn-outline-info' }} me-2" type="button">
                          <i class="fa-solid fa-q"></i> Quizzes
                     </a>
-                    <a href="{{ route('chat.index') }}" class="btn {{ request()->routeIs('chat.*') ? 'btn-secondary' : 'btn-outline-secondary' }} me-2 position-relative" type="button">
+                    <a href="{{ route('student.chat.index') }}" class="btn {{ request()->routeIs('chat.*') ? 'btn-secondary' : 'btn-outline-secondary' }} me-2 position-relative" type="button">
                          <i class="fas fa-comments"></i> Chat
                          <span id="admin-chat-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
                     </a>
-                    <a href="{{ route('notifications.index') }}" class="btn {{ request()->routeIs('notifications.*') ? 'btn-warning' : 'btn-outline-warning' }} me-2 position-relative" type="button">
+                    <a href="{{ route('student.notifications.index') }}" class="btn {{ request()->routeIs('notifications.*') ? 'btn-warning' : 'btn-outline-warning' }} me-2 position-relative" type="button">
                          <i class="fas fa-bell"></i> Notifications
                          <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
                     </a>

@@ -22,6 +22,7 @@ use App\Http\Controllers\{
 // PUBLIC PAGES
 // ========================================
 Route::get('/', [AuthController::class, 'index'])->name('home');
+Route::get('/home', [AuthController::class, 'index'])->name('homeslug');
 Route::get('/about', [HomeController::class, 'showabout'])->name('about');
 Route::get('/contact', [HomeController::class, 'showContact'])->name('contact');
 Route::get('/team', [HomeController::class, 'showTeam'])->name('team');
@@ -61,6 +62,15 @@ Route::middleware(['auth', 'admincheck:students'])->group(function () {
     Route::get('course/{course}/quizzes/{quiz}/start', [QuizController::class, 'start'])->name('quiz.start');
     Route::post('/quiz/{quiz}/submit', [QuizController::class, 'submit'])->name('quiz.submit');
     Route::get('/quiz/{quiz}/result', [QuizController::class, 'result'])->name('quiz.result');
+
+    Route::prefix('student')->group(function(){
+        // Notifications
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('student.notifications.index');
+        
+        // Student Chat Routes
+        Route::get('/chat', [ChatController::class, 'index'])->name('student.chat.index');
+        Route::get('/chat/{course}/{user}', [ChatController::class, 'show'])->name('student.chat.show');
+    });
 });
 
 // ========================================
@@ -85,7 +95,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/assignments/{assignment}/status', [AssignmentController::class, 'updateStatus'])->name('assignments.updateStatus');
     
     // Notifications
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
@@ -93,8 +103,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications/recent', [NotificationController::class, 'getRecentNotifications'])->name('notifications.recent');
     
     // Chat System
-    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-    Route::get('/chat/{course}/{user}', [ChatController::class, 'show'])->name('chat.show');
+    
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
     Route::get('/chat/{course}/{user}/messages', [ChatController::class, 'loadMessages'])->name('chat.messages');
     Route::get('/chat/unread-count', [ChatController::class, 'getUnreadCount'])->name('chat.unread-count');
@@ -144,9 +153,20 @@ Route::middleware(['auth', 'admincheck:teachers'])->group(function () {
         Route::delete('/{quiz}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
     });
     
-    // Teacher Notifications (Deadline creation)
-    Route::get('/notifications/create-deadline', [NotificationController::class, 'createDeadlineForm'])->name('notifications.create-deadline');
-    Route::post('/notifications/create-deadline', [NotificationController::class, 'storeDeadlineNotification'])->name('notifications.store-deadline');
+
+    Route::prefix('teacher')->group(function(){
+        // Notifications
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+        // Teacher Chat Route
+        Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+        Route::get('/chat/{course}/{user}', [ChatController::class, 'show'])->name('chat.show');
+
+        // Teacher Notifications (Deadline creation)
+        Route::get('/notifications/create-deadline', [NotificationController::class, 'createDeadlineForm'])->name('notifications.create-deadline');
+        Route::post('/notifications/create-deadline', [NotificationController::class, 'storeDeadlineNotification'])->name('notifications.store-deadline');
+    });
+    
 });
 
 // ========================================

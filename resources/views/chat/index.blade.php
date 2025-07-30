@@ -58,7 +58,8 @@
                                                     @endif
                                                     <br>
                                                     @if(Auth::user()->role->role === 'student')
-                                                        <a href="{{ route('chat.show', [$conversation['course']->id, $conversation['teacher']->id]) }}" 
+                                                        <a href="{{ route('student.chat.show', [$conversation['course']->id, $conversation['teacher']->id]) }}" 
+
                                                            class="btn btn-sm btn-primary">
                                                             <i class="fas fa-comment"></i> Chat
                                                         </a>
