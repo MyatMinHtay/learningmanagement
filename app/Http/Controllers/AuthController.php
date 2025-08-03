@@ -102,6 +102,10 @@ class AuthController extends Controller
                 'password.password_confirmation' => "confirm password doesn't match with password"
             ]);
 
+           
+            $formData['password'] = bcrypt($formData['password']);
+            
+
             // Handle profile photo upload with unique filename generation
             if ($file = request()->file('userimg')) {
 
@@ -237,6 +241,10 @@ class AuthController extends Controller
             ], [
                 'username.regex' => 'username must be character and number and (-) and (_) not allow other character and space'
             ]);
+
+            if (isset($formData['password'])) {
+                $formData['password'] = bcrypt($formData['password']);
+            }
 
             // Handle password change with current password verification
             if (isset($formData['password'])) {

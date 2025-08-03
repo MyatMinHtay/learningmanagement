@@ -37,6 +37,9 @@
                         <p class="text-muted mb-0">
                             <i class="fas fa-user-tie me-2"></i>{{$teacher->role->role}}
                         </p>
+                        <p class="my-2">
+                            {{$teacher->position}}
+                        </p>
                         @if($teacher->email)
                             <p class="text-muted mb-0 mt-2">
                                 <i class="fas fa-envelope me-2"></i>
@@ -82,6 +85,9 @@
                             <h5 class="mb-2 text-dark">{{$teacher->username}}</h5>
                             <p class="text-muted mb-0">
                                 <i class="fas fa-user-tie me-2"></i>{{$teacher->role->role}}
+                            </p>
+                            <p class="my-2">
+                                {{$teacher->position}}
                             </p>
                             @if($teacher->email)
                                 <p class="text-muted mb-0 mt-2">

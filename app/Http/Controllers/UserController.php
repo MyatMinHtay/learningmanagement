@@ -84,6 +84,7 @@ class UserController extends Controller
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'
                 // Require at least one lowercase letter, one uppercase letter, one number, and one special character from @$!%*?&
             ],
+            'position' => ['nullable', 'max:255'],
             'userphoto' => ['nullable', 'image', 'mimes:jpeg,png,jpg,svg', 'max:2048'],
             'role_id' => ['nullable']
 
@@ -94,6 +95,9 @@ class UserController extends Controller
             'username.required' => 'username must be required'
 
         ]);
+
+      
+        $formData['password'] = bcrypt($formData['password']);
 
         // Set default user status as Active
         $formData['status'] = "A";
@@ -117,9 +121,14 @@ class UserController extends Controller
         try {
             $user = User::create($formData);
 
-            return redirect()->route('login')->with('success', 'User ' . $user->username . '  Account Created Successfully ');
+            if(auth()->check()){
+                return redirect()->back()->with('success', 'User ' . $user->username . '  Account Created Successfully ');
+            }else{
+                return redirect()->route('login')->with('success', 'User ' . $user->username . '  Account Created Successfully Please Login');
+            }
+
         } catch (QueryException $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->with('error', $e->getMessage());
         }
     }
 
@@ -155,6 +164,7 @@ class UserController extends Controller
             'username' => ['required', 'max:255', 'min:3', Rule::unique('users')->ignore($user->id), 'regex:/^[A-Za-z0-9 ]+$/'],
             'role_id' => ['required', 'integer'],
             'userphoto' => ['mimes:jpeg,png,jpg', 'max:2048', 'sometimes'],
+            'position' => ['nullable', 'max:255'],
             'password' => 'nullable|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
             'password_confirmation' => 'sometimes|same:password',
         ], [
@@ -164,7 +174,12 @@ class UserController extends Controller
 
 
 
-
+        if (isset($formData['password'])) {
+            $formData['password'] = bcrypt($formData['password']);
+        } else {
+            unset($formData['password']);
+        }
+       
 
 
         // Handle user photo replacement with old file cleanup
@@ -200,7 +215,7 @@ class UserController extends Controller
 
             return redirect()->route('users')->with('success', 'User updated successfully');
         } catch (QueryException $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return back()->with('error', $e->getMessage());
         }
     }
 

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('status', ['A', 'D', 'L'])->default('A');
             $table->string('password');
             $table->string('userphoto', 200);
+            $table->string('position',255)->nullable();
             $table->rememberToken();
             $table->string('usercreatedby')->nullable();
             $table->string('userupdatedby')->nullable();

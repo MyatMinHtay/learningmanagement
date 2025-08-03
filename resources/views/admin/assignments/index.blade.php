@@ -140,7 +140,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="@if(in_array('students', explode(',', auth()->user()->role->permissions)) || in_array('teachers', explode(',', auth()->user()->role->permissions)) || in_array('all', explode(',', auth()->user()->role->permissions))) 8 @else 7 @endif" class="text-center">No assignments found.</td>
+                            <td colspan="@if(in_array('students', explode(',', auth()->user()->role->permissions)) || in_array('teachers', explode(',', auth()->user()->role->permissions)) || in_array('all', explode(',', auth()->user()->role->permissions))) 9 @else 7 @endif" class="text-center">No assignments found.</td>
                         </tr>
                     @endforelse
                 </tbody>

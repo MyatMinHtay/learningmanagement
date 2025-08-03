@@ -27,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'userphoto',
+        'position',
         'remember_token',
         'usercreatedby',
         'userupdatedby',
@@ -82,10 +83,10 @@ class User extends Authenticatable
 
     // table ထဲကို data ထည့်တဲ့ အခါ ကြို run ပေးတာ  
     //mutators (before data store)
-    public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = bcrypt($value);
-    }
+    // public function setPasswordAttribute($value)
+    // {
+    //     $this->attributes['password'] = bcrypt($value);
+    // }
 
     public function courses()
     {

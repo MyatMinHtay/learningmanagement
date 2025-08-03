@@ -55,6 +55,12 @@
                                   <x-error name="userphoto" />
                               </div>
 
+                              <div class="form-group mb-3">
+                                   <label for="position">Position</label>
+                                   <input id="position" type="text" class="form-control inputbox" name="position" value="{{ old('position', $user->position) }}">
+                                   <x-error name="position" />
+                               </div>
+
 
 
 

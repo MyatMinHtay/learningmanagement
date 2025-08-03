@@ -70,6 +70,7 @@
           <x-error name="systemrole"></x-error>
           <x-error name="name"></x-error>
           <x-error name="username"></x-error>
+          <x-error name="position"></x-error>
           <x-error name="email"></x-error>
           <x-error name="password"></x-error>
           <x-error name="password_confirmation"></x-error>
@@ -81,6 +82,7 @@
                          <th scope="col">Id</th>
                          <th scope="col">Role</th>
                          <th scope="col">Username</th>
+                         <th scope="col">Position</th>
                          <th scope="col">Email</th>
                          <th scope="col">Status</th>
                          <th scope="col">Edit</th>
@@ -93,6 +95,7 @@
                                    <td scope="row">{{$user->id}}</td>
                                    <td scope="row">{{$user->role}}</td>
                                    <td scope="row">{{$user->username}}</td>
+                                   <td scope="row">{{$user->position}}</td>
                                    <td scope="row">{{$user->email}}</td>
                                    
 
@@ -206,6 +209,19 @@
                         
                               
                               </div>
+
+                              <div class="form-group mb-3">
+                                  <label for="position">Position</label>
+                                  <input 
+                                  type="text" 
+                                  class="form-control inputbox"
+                                  value="{{old('position')}}"
+                                  name="position" id="position" placeholder="Enter Position"
+                                  >
+                                  
+                                  
+                                 
+                                </div>
   
                               
                               

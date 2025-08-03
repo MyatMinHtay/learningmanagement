@@ -218,7 +218,7 @@
                     <button class="btn btn-sm btn-primary me-2" onclick="markNotificationAsRead('${notification.id}', this.closest('.toast'))">
                         <i class="fas fa-check me-1"></i>Mark as Read
                     </button>
-                    <a href="/notifications" class="btn btn-sm btn-outline-secondary">
+                    <a href="{{ auth()->user()->role->role === 'teacher' ? route('notifications.index') : route('student.notifications.index') }}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-list me-1"></i>View All
                     </a>
                 </div>
