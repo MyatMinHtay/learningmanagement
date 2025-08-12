@@ -174,9 +174,17 @@ class AuthController extends Controller
      */
     public function postLogin(Request $request)
     {
-        try {
+      
+            $userRole = $request->input('role');
+
+            // Validate input
             $formData = $request->validate([
-                'email' => ['required', 'email', 'max:255', Rule::exists('users', 'email')],
+                'email' => [
+                    'required', 
+                    'email', 
+                    'max:255', 
+                    Rule::exists('users', 'email')
+                ],
                 'password' => ['required', 'min:8', 'max:255']
             ], [
                 'email.required' => 'We need your email address',
@@ -185,40 +193,32 @@ class AuthController extends Controller
 
             $remember = $request->has('remember');
 
-            // Attempt authentication with credentials
-            if (auth()->attempt($formData, $remember)) {
-
-                $request->session()->regenerate();
-                $username = auth()->user()->username;
-                $role = auth()->user()->role->role;
-
-                // Role-based redirection after successful login
-                if($role == 'admin'){
-                    return redirect()->route('users')->with('success', "Welcome Back $username");
-                }else{
-                    return redirect()->route('home')->with('success', "Welcome Back $username");
-                }
-                
-            }
-
-            // Check if the email is incorrect
+            // Find the user by email
             $user = User::where('email', $formData['email'])->first();
-            if (!$user) {
+
+
+            // Check role
+            if ($user->role->role !== $userRole) {
                 return back()->withErrors([
-                    'email' => 'The provided email address is incorrect.',
+                    'role' => 'Role does not match the account.'
                 ]);
             }
 
-            // If the email is correct, the password must be incorrect
+            // Attempt login
+            if (auth()->attempt($formData, $remember)) {
+                $request->session()->regenerate();
+                return redirect()->route('home')
+                    ->with('success', "Welcome back {$user->username}");
+            }
+
+            // If authentication fails but email & role are correct → password is wrong
             return back()->withErrors([
-                'password' => 'The provided password is incorrect.',
+                'password' => 'The provided password is incorrect.'
             ]);
 
-        } catch (Exception $e) {
-            Log::error('Error in postLogin: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Login failed. Please try again.');
-        }
+        
     }
+
 
     /**
      * Update user profile information including password change and photo upload

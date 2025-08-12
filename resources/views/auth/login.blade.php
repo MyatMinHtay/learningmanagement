@@ -15,6 +15,8 @@
 
 
                     @csrf
+                    <input type="hidden" name="role" value="student">
+
                     <div class="form-group mx-auto my-1">
                         <label for="email">Email</label>
                         <input type="email" id="email" value="{{ old('email') }}" name="email"

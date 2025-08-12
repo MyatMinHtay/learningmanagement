@@ -15,6 +15,8 @@
 
 
                     @csrf
+                    <input type="hidden" name="role" value="admin">
+
                     <div class="form-group mx-auto my-1">
                         <label for="email">Email</label>
                         <input type="email" id="email" value="{{ old('email') }}" name="email"
@@ -49,10 +51,10 @@
                             </label>
                         </div>
 
-                        <div class="d-flex align-items-center">
+                        {{-- <div class="d-flex align-items-center">
                             <p class="my-0 me-2">Don't have an account?</p>
                             <a href="{{ route('register') }}" class="text-decoration-none">Register</a>
-                        </div>
+                        </div> --}}
 
                     </div>
 
