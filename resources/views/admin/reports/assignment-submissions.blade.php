@@ -83,7 +83,7 @@
                                     <th scope="col">Course</th>
                                     <th scope="col">Teacher</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col">Grade</th>
+                                    <th scope="col">Mark</th>
                                     <th scope="col">Submitted Date</th>
                                     <th scope="col">Actions</th>
                                 </tr>
@@ -135,10 +135,9 @@
                                             @if($submission->mark !== null)
                                                 @php
                                                     $gradeClass = 'bg-success';
-                                                    if($submission->mark < 60) $gradeClass = 'bg-danger';
-                                                    elseif($submission->mark < 80) $gradeClass = 'bg-warning';
+                                                    
                                                 @endphp
-                                                <span class="badge {{ $gradeClass }}">{{ number_format($submission->mark, 1) }}%</span>
+                                                <span class="badge {{ $gradeClass }}">{{ $submission->mark }}</span>
                                             @else
                                                 <span class="badge bg-secondary">Not Graded</span>
                                             @endif

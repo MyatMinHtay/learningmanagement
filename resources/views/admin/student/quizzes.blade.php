@@ -13,7 +13,7 @@
                         <th>Total Questions</th>
                         <th>Time Limit</th>
                         <th>Status</th>
-                        <th>Score</th>
+                        <th>Mark</th>
                         <th>Action</th>
                     </tr>
                 </thead>

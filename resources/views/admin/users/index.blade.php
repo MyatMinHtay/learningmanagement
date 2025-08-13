@@ -84,7 +84,6 @@
                          <th scope="col">Username</th>
                          <th scope="col">Position</th>
                          <th scope="col">Email</th>
-                         <th scope="col">Status</th>
                          <th scope="col">Edit</th>
                          
                          <th scope="col">Delete</th>
@@ -97,17 +96,10 @@
                                    <td scope="row">{{$user->username}}</td>
                                    <td scope="row">{{$user->position}}</td>
                                    <td scope="row">{{$user->email}}</td>
-                                   
-
-                                   <td scope="row">{{$user->status}}</td>
                                  
                                   
                                    <td scope="row" class="text-center"><a href="/admin/users/edit/{{$user->username}}"  class="btn btn-info"><i class="fa-solid fa-pen-to-square"></i></a></td>
-                                   {{-- <td scope="row" class="text-center">
-
-                                    <a href="/admin/users/lock/{{$user->username}}" class="btn btn-warning mx-1"><i class="fa-solid fa-lock"></i></a>
-                                    <a href="/admin/users/unlock/{{$user->username}}" class="btn btn-success mx-1"><i class="fa-solid fa-lock-open"></i></a>
-                                  </td> --}}
+                                   
                                   
                                    <td scope="row" class="text-center"><a href="/admin/users/delete/{{$user->username}}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a></td>
                               </tr>

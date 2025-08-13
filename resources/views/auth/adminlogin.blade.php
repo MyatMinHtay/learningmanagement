@@ -15,7 +15,7 @@
 
 
                     @csrf
-                    <input type="hidden" name="role" value="admin">
+                    <input type="hidden" name="role" value="adminstrator">
 
                     <div class="form-group mx-auto my-1">
                         <label for="email">Email</label>

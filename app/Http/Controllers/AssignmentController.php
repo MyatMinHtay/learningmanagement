@@ -23,6 +23,8 @@ class AssignmentController extends Controller
                     ->latest()
                     ->paginate(10);
 
+               
+
             // If the user is an teacher
             } elseif ($user->role->role === 'teacher') {
                 // Get course IDs that the instructor created

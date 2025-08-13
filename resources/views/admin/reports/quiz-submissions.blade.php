@@ -130,8 +130,8 @@
                                                     if($percentage < 60) $gradeClass = 'bg-danger';
                                                     elseif($percentage < 80) $gradeClass = 'bg-warning';
                                                 @endphp
-                                                <span class="badge {{ $gradeClass }}">{{ number_format($percentage, 1) }}%</span>
-                                                <br><small class="text-muted">{{ $submission->grade }}</small>
+                                                <span class="badge {{ $gradeClass }}">{{ $submission->score }}</span>
+                                                
                                             @else
                                                 <span class="badge bg-secondary">Not Completed</span>
                                             @endif
