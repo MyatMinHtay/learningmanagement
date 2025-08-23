@@ -178,6 +178,7 @@ Route::middleware(['auth', 'admincheck:users'])->group(function () {
     Route::get('/teacher/dashboard', [DashboardController::class, 'show'])->name('teacher.dashboard');
     Route::get('/student/dashboard', [DashboardController::class, 'show'])->name('student.dashboard');
     Route::get('/students/{student}/courses', [CourseController::class, 'showStudentCourses']);
+    Route::get('/admin/analytics', [DashboardController::class, 'showAnalytics'])->name('admin.analytics');
     
     // User Management
     Route::prefix('admin/users')->middleware('admincheck:admins')->group(function () {

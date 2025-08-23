@@ -69,6 +69,9 @@
                     <a href="/admin/users" class="btn {{ request()->is('admin/users*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">
                          <i class="fa-solid fa-u"></i> Users
                     </a>
+                    <a href="{{ route('admin.analytics') }}" class="btn {{ request()->is('admin/analytics*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
+                         <i class="fa-solid fa-r"></i> Analytics
+                    </a>
                     
                     <!-- Admin Report Tables -->
                     <div class="btn-group me-2" role="group">
