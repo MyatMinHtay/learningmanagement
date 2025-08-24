@@ -132,6 +132,45 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get();
             
+            // Quiz submissions chart data (last 31 days)
+            $quizSubmissionsChart = QuizAttempt::select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('COUNT(*) as count'),
+                DB::raw('AVG(score) as avg_score')
+            )
+            ->where('is_completed', true)
+            ->where('created_at', '>=', now()->subDays(31))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+            
+            // Assignment submissions chart data (last 31 days)
+            $assignmentSubmissionsChart = Assignment::select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->whereNotNull('student_id')
+            ->whereNotNull('files')
+            ->where('created_at', '>=', now()->subDays(31))
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get();
+            
+            // Quiz score distribution for pie chart
+            $quizScoreDistribution = QuizAttempt::select(
+                DB::raw('CASE 
+                    WHEN score >= 90 THEN "Excellent (90-100%)" 
+                    WHEN score >= 80 THEN "Good (80-89%)" 
+                    WHEN score >= 70 THEN "Average (70-79%)" 
+                    WHEN score >= 60 THEN "Below Average (60-69%)" 
+                    ELSE "Poor (0-59%)" 
+                END as score_range'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->where('is_completed', true)
+            ->groupBy('score_range')
+            ->get();
+            
             // Monthly registration data for chart
             $monthlyRegistrations = User::select(
                 DB::raw('MONTH(created_at) as month'),
@@ -181,6 +220,32 @@ class DashboardController extends Controller
             $assignmentSubmissionRate = $totalAssignmentTasks > 0 ? 
                 round(($submittedAssignments / $totalAssignmentTasks) * 100, 1) : 0;
             
+            // Course enrollment data for circular chart
+            $courseEnrollmentData = Course::withCount('students')
+                ->with(['creator'])
+                ->orderBy('students_count', 'desc')
+                ->limit(8)
+                ->get()
+                ->map(function($course) {
+                    return [
+                        'name' => $course->name,
+                        'enrollments' => $course->students_count,
+                        'creator' => $course->creator->username ?? 'Unknown'
+                    ];
+                });
+            
+            // Monthly enrollment trends
+            $monthlyEnrollments = CourseStudent::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get();
+            
             return view('admin.analytics.index', compact(
                 'totalUsers', 'totalCourses', 'totalQuizzes', 'totalAssignments', 'totalLessons',
                 'adminCount', 'teacherCount', 'studentCount',
@@ -189,7 +254,8 @@ class DashboardController extends Controller
                 'monthlyRegistrations', 'monthlyCourses',
                 'quizPerformance', 'passRate',
                 'activeUsersToday', 'newRegistrationsThisWeek', 'coursesCreatedThisMonth',
-                'assignmentSubmissionRate'
+                'assignmentSubmissionRate', 'quizSubmissionsChart', 'assignmentSubmissionsChart', 'quizScoreDistribution',
+                'courseEnrollmentData', 'monthlyEnrollments'
             ));
             
         } catch (Exception $e) {

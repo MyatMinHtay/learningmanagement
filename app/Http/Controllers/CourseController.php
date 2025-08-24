@@ -237,7 +237,7 @@ class CourseController extends Controller
             return back()->withErrors(['error' => 'Failed to update course: ' . $e->getMessage()]);
         }
 
-        return redirect()->route('admincourses')->with('success', 'Course updated successfully.');
+        return redirect()->route('teachercourses')->with('success', 'Course updated successfully.');
     }
 
     /**
