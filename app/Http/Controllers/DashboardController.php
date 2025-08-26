@@ -63,33 +63,42 @@ class DashboardController extends Controller
         }
     }
 
-    public function showAnalytics(){
+    public function showAnalytics(Request $request){
         
         try {
-            // Basic counts
-            $totalUsers = User::count();
-            $totalCourses = Course::count();
-            $totalQuizzes = Quiz::count();
-            $totalAssignments = Assignment::whereNotNull('assignment_title')->distinct('assignment_title')->count();
-            $totalLessons = Lesson::count();
+            // Get date range from request or set defaults
+            $startDate = $request->get('start_date', now()->subMonths(12)->format('Y-m-d'));
+            $endDate = $request->get('end_date', now()->format('Y-m-d'));
             
-             
-            // User distribution by role
+            // Validate and parse dates
+            $startDate = \Carbon\Carbon::parse($startDate)->startOfDay();
+            $endDate = \Carbon\Carbon::parse($endDate)->endOfDay();
+            
+            // Basic counts with date filtering
+            $totalUsers = User::whereBetween('created_at', [$startDate, $endDate])->count();
+            $totalCourses = Course::whereBetween('created_at', [$startDate, $endDate])->count();
+            $totalQuizzes = Quiz::whereBetween('created_at', [$startDate, $endDate])->count();
+            $totalAssignments = Assignment::whereNotNull('assignment_title')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->distinct('assignment_title')->count();
+            $totalLessons = Lesson::whereBetween('created_at', [$startDate, $endDate])->count();
+            
+            // User distribution by role (filtered by date)
             $usersByRole = User::join('system_roles', 'users.role_id', '=', 'system_roles.id')
                 ->select('system_roles.role as role_name', DB::raw('count(*) as count'))
+                ->whereBetween('users.created_at', [$startDate, $endDate])
                 ->groupBy('system_roles.role')
                 ->get();
-
-              
-            
+        
             $adminCount = $usersByRole->where('role_name', 'adminstrator')->first()->count ?? 0;
             $teacherCount = $usersByRole->where('role_name', 'teacher')->first()->count ?? 0;
             $studentCount = $usersByRole->where('role_name', 'student')->first()->count ?? 0;
             
-            // Course enrollment statistics
-            $totalEnrollments = CourseStudent::count();
+            // Course enrollment statistics (filtered by date)
+            $totalEnrollments = CourseStudent::whereBetween('created_at', [$startDate, $endDate])->count();
             $avgEnrollmentPerCourse = $totalCourses > 0 ? round($totalEnrollments / $totalCourses, 1) : 0;
-             
+            
+            // Update all other queries to include date filtering...
             // Top performing courses with enrollment count
             $topCourses = Course::withCount('students')
                 ->with(['creator'])
@@ -114,7 +123,7 @@ class DashboardController extends Controller
                     
                     return $course;
                 });
-
+        
               
             
             // Recent quiz submissions
@@ -246,6 +255,63 @@ class DashboardController extends Controller
             ->orderBy('month', 'asc')
             ->get();
             
+            // Monthly comparison data for the last 12 months
+            $monthlyComparison = collect();
+            
+            // Get monthly quiz submissions
+            $monthlyQuizSubmissions = QuizAttempt::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->where('is_completed', true)
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy(function($item) {
+                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+            });
+            
+            // Get monthly assignment submissions
+            $monthlyAssignmentSubmissions = Assignment::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->whereNotNull('student_id')
+            ->whereNotNull('files')
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy(function($item) {
+                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+            });
+            
+            // Get monthly enrollments (already exists, just reformat)
+            $monthlyEnrollmentsFormatted = $monthlyEnrollments->keyBy(function($item) {
+                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+            });
+            
+            // Combine all monthly data
+            for ($i = 11; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+                $key = $date->format('Y-m');
+                $monthName = $date->format('M Y');
+                
+                $monthlyComparison->push([
+                    'month' => $monthName,
+                    'month_key' => $key,
+                    'enrollments' => $monthlyEnrollmentsFormatted->get($key)->count ?? 0,
+                    'quiz_submissions' => $monthlyQuizSubmissions->get($key)->count ?? 0,
+                    'assignment_submissions' => $monthlyAssignmentSubmissions->get($key)->count ?? 0,
+                ]);
+            }
+
+            // Pass date range to view
             return view('admin.analytics.index', compact(
                 'totalUsers', 'totalCourses', 'totalQuizzes', 'totalAssignments', 'totalLessons',
                 'adminCount', 'teacherCount', 'studentCount',
@@ -255,7 +321,8 @@ class DashboardController extends Controller
                 'quizPerformance', 'passRate',
                 'activeUsersToday', 'newRegistrationsThisWeek', 'coursesCreatedThisMonth',
                 'assignmentSubmissionRate', 'quizSubmissionsChart', 'assignmentSubmissionsChart', 'quizScoreDistribution',
-                'courseEnrollmentData', 'monthlyEnrollments'
+                'courseEnrollmentData', 'monthlyEnrollments', 'monthlyComparison',
+                'startDate', 'endDate'
             ));
             
         } catch (Exception $e) {

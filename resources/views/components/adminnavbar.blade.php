@@ -70,7 +70,7 @@
                          <i class="fa-solid fa-u"></i> Users
                     </a>
                     <a href="{{ route('admin.analytics') }}" class="btn {{ request()->is('admin/analytics*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
-                         <i class="fa-solid fa-r"></i> Analytics
+                         <i class="fa-solid fa-a"></i> Analytics
                     </a>
                     
                     <!-- Admin Report Tables -->

@@ -5,6 +5,65 @@
             <p class="text-muted">Comprehensive insights into your learning management system</p>
         </div>
 
+        <!-- Date Filter Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="date-filter-card">
+                    <div class="date-filter-header">
+                        <h5><i class="fas fa-calendar-alt"></i> Date Range Filter</h5>
+                    </div>
+                    <div class="date-filter-body">
+                        <form method="GET" action="{{ route('admin.analytics') }}" class="date-filter-form">
+                            <div class="row align-items-end">
+                                <div class="col-md-4 mb-3">
+                                    <label for="start_date" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control date-input" id="start_date" name="start_date" 
+                                           value="{{ request('start_date', now()->subMonths(12)->format('Y-m-d')) }}">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="end_date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control date-input" id="end_date" name="end_date" 
+                                           value="{{ request('end_date', now()->format('Y-m-d')) }}">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="filter-buttons">
+                                        <button type="submit" class="btn btn-filter-apply">
+                                            <i class="fas fa-search"></i> Apply Filter
+                                        </button>
+                                        <a href="{{ route('admin.analytics') }}" class="btn btn-filter-reset">
+                                            <i class="fas fa-undo"></i> Reset
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="quick-filters">
+                                        <span class="quick-filter-label">Quick Filters:</span>
+                                        <button type="button" class="btn btn-quick-filter" onclick="setDateRange('today')">
+                                            Today
+                                        </button>
+                                        <button type="button" class="btn btn-quick-filter" onclick="setDateRange('week')">
+                                            This Week
+                                        </button>
+                                        <button type="button" class="btn btn-quick-filter" onclick="setDateRange('month')">
+                                            This Month
+                                        </button>
+                                        <button type="button" class="btn btn-quick-filter" onclick="setDateRange('quarter')">
+                                            This Quarter
+                                        </button>
+                                        <button type="button" class="btn btn-quick-filter" onclick="setDateRange('year')">
+                                            This Year
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Key Metrics Cards -->
         <div class="row mb-4">
             <div class="col-md-2 col-sm-6 mb-3">
@@ -108,42 +167,6 @@
                         <div class="chart-container">
                             <canvas id="monthlyCoursesChart" class="chart-canvas"></canvas>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Metrics -->
-        <div class="row mb-4">
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card performance-card">
-                    <div class="card-body text-center">
-                        <h3>{{ $quizPerformance->avg_score ?? 0 }}%</h3>
-                        <p class="mb-0">Average Quiz Score</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card performance-card bg-gradient-success">
-                    <div class="card-body text-center">
-                        <h3>{{ $passRate }}%</h3>
-                        <p class="mb-0">Quiz Pass Rate</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card performance-card bg-gradient-warning">
-                    <div class="card-body text-center">
-                        <h3>{{ $avgEnrollmentPerCourse }}</h3>
-                        <p class="mb-0">Avg Enrollment/Course</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card performance-card bg-gradient-info">
-                    <div class="card-body text-center">
-                        <h3>{{ $assignmentSubmissionRate }}%</h3>
-                        <p class="mb-0">Assignment Submission Rate</p>
                     </div>
                 </div>
             </div>
@@ -454,6 +477,50 @@
                 </div>
             </div>
         </div>
+
+        <!-- Monthly Activity Comparison Chart -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="analytics-card">
+                    <div class="analytics-card-header">
+                        <h5><i class="fas fa-chart-bar"></i> Monthly Activity Comparison</h5>
+                        <p class="text-muted mb-0">Course enrollments, quiz submissions, and assignment submissions by month</p>
+                    </div>
+                    <div class="analytics-card-body">
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="monthlyComparisonChart" class="chart-canvas"></canvas>
+                        </div>
+                        
+                        <!-- Summary Statistics -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <h6 class="mb-1">Total Enrollments</h6>
+                                    <span class="custom-badge badge-primary-custom">{{ $monthlyComparison->sum('enrollments') }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <h6 class="mb-1">Total Quiz Submissions</h6>
+                                    <span class="custom-badge badge-warning-custom">{{ $monthlyComparison->sum('quiz_submissions') }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <h6 class="mb-1">Total Assignment Submissions</h6>
+                                    <span class="custom-badge badge-info-custom">{{ $monthlyComparison->sum('assignment_submissions') }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <h6 class="mb-1">Most Active Month</h6>
+                                    @php
+                                        $mostActiveMonth = $monthlyComparison->sortByDesc(function($item) {
+                                            return $item['enrollments'] + $item['quiz_submissions'] + $item['assignment_submissions'];
+                                        })->first();
+                                    @endphp
+                                    <span class="custom-badge badge-success-custom">{{ $mostActiveMonth['month'] ?? 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <script src="{{ asset('assets/js/chart.js') }}"></script>
@@ -580,6 +647,52 @@
                         }
                     }
                 }
+            }
+        });
+
+        // Date Range Quick Filter Functions
+        function setDateRange(period) {
+            const today = new Date();
+            let startDate, endDate;
+            
+            switch(period) {
+                case 'today':
+                    startDate = endDate = today.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const weekStart = new Date(today.setDate(today.getDate() - today.getDay()));
+                    startDate = weekStart.toISOString().split('T')[0];
+                    endDate = new Date().toISOString().split('T')[0];
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                    endDate = new Date().toISOString().split('T')[0];
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(today.getMonth() / 3);
+                    startDate = new Date(today.getFullYear(), quarter * 3, 1).toISOString().split('T')[0];
+                    endDate = new Date().toISOString().split('T')[0];
+                    break;
+                case 'year':
+                    startDate = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+                    endDate = new Date().toISOString().split('T')[0];
+                    break;
+            }
+            
+            document.getElementById('start_date').value = startDate;
+            document.getElementById('end_date').value = endDate;
+        }
+
+        // Auto-submit form when date inputs change
+        document.getElementById('start_date').addEventListener('change', function() {
+            if (this.value && document.getElementById('end_date').value) {
+                document.querySelector('.date-filter-form').submit();
+            }
+        });
+
+        document.getElementById('end_date').addEventListener('change', function() {
+            if (this.value && document.getElementById('start_date').value) {
+                document.querySelector('.date-filter-form').submit();
             }
         });
 
@@ -958,5 +1071,136 @@
         //         cutout: '60%'
         //     }
         // });
+
+        // Monthly Comparison Chart
+        const monthlyComparisonCtx = document.getElementById('monthlyComparisonChart').getContext('2d');
+        const monthlyComparisonChart = new Chart(monthlyComparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($monthlyComparison->pluck('month')) !!},
+                datasets: [
+                    {
+                        label: 'Course Enrollments',
+                        data: {!! json_encode($monthlyComparison->pluck('enrollments')) !!},
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    },
+                    {
+                        label: 'Quiz Submissions',
+                        data: {!! json_encode($monthlyComparison->pluck('quiz_submissions')) !!},
+                        backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    },
+                    {
+                        label: 'Assignment Submissions',
+                        data: {!! json_encode($monthlyComparison->pluck('assignment_submissions')) !!},
+                        backgroundColor: 'rgba(23, 162, 184, 0.8)',
+                        borderColor: 'rgba(23, 162, 184, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Monthly Activity Comparison',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        color: '#333'
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        cornerRadius: 6,
+                        displayColors: true,
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label;
+                            },
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y;
+                            },
+                            afterBody: function(context) {
+                                const total = context.reduce((sum, item) => sum + item.parsed.y, 0);
+                                return 'Total Activity: ' + total;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Month',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Count',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
     </script>
 </x-adminlayout>
