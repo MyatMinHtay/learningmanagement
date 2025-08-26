@@ -16,6 +16,7 @@ use App\Models\QuizAnswer;
 use App\Models\QuizQuestion;
 use App\Models\QuizAttempt;
 use Illuminate\Database\QueryException;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 
 
@@ -572,6 +573,105 @@ class QuizController extends Controller
         }
     }
 
+    public function exportPDF(Request $request)
+    {
+        try {
+            $query = Quiz::with(['course.creator']);
+            
+            // Apply the same filters as reportTable method
+            if ($request->has('teacher') && $request->teacher != '') {
+                $query->whereHas('course', function($q) use ($request) {
+                    $q->where('created_by', $request->teacher);
+                });
+            }
+            
+            if ($request->has('course') && $request->course != '') {
+                $query->where('course_id', $request->course);
+            }
+            
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+            
+            $quizzes = $query->latest()->get();
+            $teachers = User::whereHas('role', function($q) {
+                $q->where('role', 'teacher');
+            })->get();
+            $courses = Course::all();
+            
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.reports.quizzes-pdf', compact('quizzes', 'teachers', 'courses', 'request'));
+            
+            $filename = 'quiz-reports-' . date('Y-m-d-H-i-s') . '.pdf';
+            
+            return $pdf->download($filename);
+            
+        } catch (Exception $e) {
+            Log::error('Error in quiz PDF export: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to export PDF. Please try again.');
+        }
+    }
 
+    public function exportSubmissionsPDF(Request $request)
+    {
+        try {
+            $query = QuizAttempt::with(['user', 'quiz.course.creator']);
+            
+            // Apply the same filters as submissionReportTable method
+            if ($request->has('student') && $request->student != '') {
+                $query->where('user_id', $request->student);
+            }
+            
+            if ($request->has('quiz') && $request->quiz != '') {
+                $query->where('quiz_id', $request->quiz);
+            }
+            
+            if ($request->has('course') && $request->course != '') {
+                $query->whereHas('quiz', function($q) use ($request) {
+                    $q->where('course_id', $request->course);
+                });
+            }
+            
+            if ($request->has('grade_min') && $request->grade_min != '') {
+                $query->where('score', '>=', $request->grade_min);
+            }
+            
+            if ($request->has('grade_max') && $request->grade_max != '') {
+                $query->where('score', '<=', $request->grade_max);
+            }
+            
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+            
+            $submissions = $query->latest()->get();
+            $students = User::whereHas('role', function($q) {
+                $q->where('role', 'student');
+            })->get();
+            $quizzes = Quiz::all();
+            $courses = Course::all();
+            
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.reports.quiz-submissions-pdf', compact('submissions', 'students', 'quizzes', 'courses', 'request'));
+            
+            $filename = 'quiz-submission-reports-' . date('Y-m-d-H-i-s') . '.pdf';
+            
+            return $pdf->download($filename);
+            
+        } catch (Exception $e) {
+            Log::error('Error in quiz submission PDF export: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to export PDF. Please try again.');
+        }
+    }
 
 }
+
+

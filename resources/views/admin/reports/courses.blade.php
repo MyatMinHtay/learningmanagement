@@ -46,8 +46,15 @@
                     </form>
 
                     <!-- Results Summary -->
-                    <div class="alert alert-info">
-                        <strong>Total Courses:</strong> {{ $courses->total() }} courses found
+                    <div class="alert alert-info d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Total Courses:</strong> {{ $courses->total() }} courses found
+                        </div>
+                        <div>
+                            <a href="{{ route('admin.reports.courses.pdf', request()->query()) }}" class="btn btn-danger btn-sm">
+                                <i class="fa fa-file-pdf"></i> Export PDF
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Courses Table -->

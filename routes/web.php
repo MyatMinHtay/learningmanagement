@@ -203,9 +203,14 @@ Route::middleware(['auth', 'admincheck:users'])->group(function () {
     // Admin Report Tables
     Route::prefix('admin/reports')->middleware('admincheck:admins')->group(function () {
         Route::get('/courses', [CourseController::class, 'reportTable'])->name('admin.reports.courses');
+        Route::get('/courses/export-pdf', [CourseController::class, 'exportPDF'])->name('admin.reports.courses.pdf');
         Route::get('/quizzes', [QuizController::class, 'reportTable'])->name('admin.reports.quizzes');
+        Route::get('/quizzes/export-pdf', [QuizController::class, 'exportPDF'])->name('admin.reports.quizzes.pdf');
         Route::get('/quiz-submissions', [QuizController::class, 'submissionReportTable'])->name('admin.reports.quiz-submissions');
+        Route::get('/quiz-submissions/export-pdf', [QuizController::class, 'exportSubmissionsPDF'])->name('admin.reports.quiz-submissions.pdf');
         Route::get('/assignments', [AssignmentController::class, 'reportTable'])->name('admin.reports.assignments');
+        Route::get('/assignments/export-pdf', [AssignmentController::class, 'exportPDF'])->name('admin.reports.assignments.pdf');
         Route::get('/assignment-submissions', [AssignmentController::class, 'submissionReportTable'])->name('admin.reports.assignment-submissions');
+        Route::get('/assignment-submissions/export-pdf', [AssignmentController::class, 'exportSubmissionsPDF'])->name('admin.reports.assignment-submissions.pdf');
     });
 });

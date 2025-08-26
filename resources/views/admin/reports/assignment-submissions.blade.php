@@ -62,7 +62,10 @@
                         <div class="row mt-3">
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary me-2">Filter</button>
-                                <a href="{{ route('admin.reports.assignment-submissions') }}" class="btn btn-secondary">Reset</a>
+                                <a href="{{ route('admin.reports.assignment-submissions') }}" class="btn btn-secondary me-2">Reset</a>
+                                <a href="{{ route('admin.reports.assignment-submissions.pdf', request()->query()) }}" class="btn btn-success">
+                                    <i class="fas fa-file-pdf me-1"></i>Export PDF
+                                </a>
                             </div>
                         </div>
                     </form>

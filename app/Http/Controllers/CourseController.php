@@ -16,6 +16,7 @@ use App\Models\CourseModule;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CourseController extends Controller
 {
@@ -398,6 +399,47 @@ class CourseController extends Controller
         } catch (Exception $e) {
             Log::error('Error in course report table: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Unable to load course reports. Please try again.');
+        }
+    }
+
+    public function exportPDF(Request $request)
+    {
+        try {
+            $query = Course::with(['creator', 'category', 'students']);
+            
+            // Apply the same filters as reportTable method
+            if ($request->has('teacher') && $request->teacher != '') {
+                $query->where('created_by', $request->teacher);
+            }
+            
+            if ($request->has('category') && $request->category != '') {
+                $query->where('category_id', $request->category);
+            }
+            
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+            
+            $courses = $query->latest()->get();
+            $teachers = User::whereHas('role', function($q) {
+                $q->where('role', 'teacher');
+            })->get();
+            $categories = CourseCategory::all();
+            
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.reports.courses-pdf', compact('courses', 'teachers', 'categories', 'request'));
+            
+            $filename = 'course-reports-' . date('Y-m-d-H-i-s') . '.pdf';
+            
+            return $pdf->download($filename);
+            
+        } catch (Exception $e) {
+            Log::error('Error in course PDF export: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to export PDF. Please try again.');
         }
     }
 

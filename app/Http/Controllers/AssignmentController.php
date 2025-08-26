@@ -6,8 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\Assignment;
 use App\Models\Course;
 use App\Models\Notification;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 class AssignmentController extends Controller
 {
@@ -341,6 +345,113 @@ class AssignmentController extends Controller
         } catch (Exception $e) {
             Log::error('Error in assignment submission report table: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Unable to load assignment submission reports. Please try again.');
+        }
+    }
+
+    public function exportPDF(Request $request)
+    {
+        try {
+            $query = Assignment::with(['course.creator', 'submissions']);
+            
+            // Apply the same filters as reportTable method
+            if ($request->has('teacher') && $request->teacher != '') {
+                $query->whereHas('course', function($q) use ($request) {
+                    $q->where('created_by', $request->teacher);
+                });
+            }
+            
+            if ($request->has('course') && $request->course != '') {
+                $query->where('course_id', $request->course);
+            }
+            
+            if ($request->has('status') && $request->status != '') {
+                $query->where('status', $request->status);
+            }
+            
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+            
+            $assignments = $query->latest()->get();
+            $teachers = User::whereHas('role', function($q) {
+                $q->where('role', 'teacher');
+            })->get();
+            $courses = Course::all();
+            
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.reports.assignments-pdf', compact('assignments', 'teachers', 'courses', 'request'));
+            
+            $filename = 'assignment-reports-' . date('Y-m-d-H-i-s') . '.pdf';
+            
+            return $pdf->download($filename);
+            
+        } catch (Exception $e) {
+            Log::error('Error in assignment PDF export: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to export PDF. Please try again.');
+        }
+    }
+
+    public function exportSubmissionsPDF(Request $request)
+    {
+        try {
+            $query = Assignment::with(['user', 'course.creator']);
+            
+            // Apply the same filters as submissionReportTable method
+            if ($request->has('student') && $request->student != '') {
+                $query->where('user_id', $request->student);
+            }
+            
+            if ($request->has('course') && $request->course != '') {
+                $query->where('course_id', $request->course);
+            }
+            
+            if ($request->has('teacher') && $request->teacher != '') {
+                $query->whereHas('course', function($q) use ($request) {
+                    $q->where('created_by', $request->teacher);
+                });
+            }
+            
+            if ($request->has('status') && $request->status != '') {
+                if ($request->status == 'submitted') {
+                    $query->whereNotNull('files')->where('files', '!=', '[]');
+                } elseif ($request->status == 'graded') {
+                    $query->whereNotNull('mark');
+                } elseif ($request->status == 'late') {
+                    $query->whereRaw('updated_at > due_date');
+                }
+            }
+            
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('updated_at', '>=', $request->date_from);
+            }
+            
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('updated_at', '<=', $request->date_to);
+            }
+            
+            $submissions = $query->latest('updated_at')->get();
+            $students = User::whereHas('role', function($q) {
+                $q->where('role', 'student');
+            })->get();
+            $teachers = User::whereHas('role', function($q) {
+                $q->where('role', 'teacher');
+            })->get();
+            $courses = Course::all();
+            
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.reports.assignment-submissions-pdf', compact('submissions', 'students', 'teachers', 'courses', 'request'));
+            
+            $filename = 'assignment-submission-reports-' . date('Y-m-d-H-i-s') . '.pdf';
+            
+            return $pdf->download($filename);
+            
+        } catch (Exception $e) {
+            Log::error('Error in assignment submission PDF export: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to export PDF. Please try again.');
         }
     }
 }
