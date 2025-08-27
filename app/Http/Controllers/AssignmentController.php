@@ -351,7 +351,9 @@ class AssignmentController extends Controller
     public function exportPDF(Request $request)
     {
         try {
-            $query = Assignment::with(['course.creator', 'submissions']);
+            $query = Assignment::with(['course', 'course.creator', 'course.students', 'student'])
+                ->whereNotNull('assignment_title')
+                ->where('assignment_title', '!=', '');
             
             // Apply the same filters as reportTable method
             if ($request->has('teacher') && $request->teacher != '') {

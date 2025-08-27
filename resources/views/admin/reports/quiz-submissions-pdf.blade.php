@@ -66,10 +66,10 @@
             <p><strong>Course:</strong> {{ $request->course }}</p>
         @endif
         @if($request->grade_min)
-            <p><strong>Min Grade:</strong> {{ $request->grade_min }}%</p>
+            <p><strong>Min Grade:</strong> {{ $request->grade_min }}</p>
         @endif
         @if($request->grade_max)
-            <p><strong>Max Grade:</strong> {{ $request->grade_max }}%</p>
+            <p><strong>Max Grade:</strong> {{ $request->grade_max }}</p>
         @endif
         @if($request->date_from)
             <p><strong>From Date:</strong> {{ $request->date_from }}</p>
@@ -91,8 +91,7 @@
                 <th>Student</th>
                 <th>Quiz</th>
                 <th>Course</th>
-                <th>Score</th>
-                <th>Grade</th>
+                <th>Mark</th>
                 <th>Attempt Date</th>
             </tr>
         </thead>
@@ -121,28 +120,8 @@
                             No Course
                         @endif
                     </td>
-                    <td>{{ $submission->score ?? 0 }}%</td>
-                    <td>
-                        @php
-                            $score = $submission->score ?? 0;
-                            $gradeClass = 'badge-danger';
-                            $grade = 'F';
-                            if ($score >= 90) {
-                                $gradeClass = 'badge-success';
-                                $grade = 'A';
-                            } elseif ($score >= 80) {
-                                $gradeClass = 'badge-info';
-                                $grade = 'B';
-                            } elseif ($score >= 70) {
-                                $gradeClass = 'badge-warning';
-                                $grade = 'C';
-                            } elseif ($score >= 60) {
-                                $gradeClass = 'badge-warning';
-                                $grade = 'D';
-                            }
-                        @endphp
-                        <span class="badge {{ $gradeClass }}">{{ $grade }}</span>
-                    </td>
+                    <td>{{ $submission->score ?? 0 }} / {{ $submission->quiz->total_marks }}</td>
+                    
                     <td>{{ $submission->created_at->format('M d, Y H:i') }}</td>
                 </tr>
             @empty

@@ -85,7 +85,6 @@
                 <th>Assignment Title</th>
                 <th>Course</th>
                 <th>Created By</th>
-                <th>Due Date</th>
                 <th>Status</th>
                 <th>Submissions</th>
                 <th>Created Date</th>
@@ -111,13 +110,6 @@
                             {{ $assignment->course->creator->username }}
                         @else
                             Unknown
-                        @endif
-                    </td>
-                    <td>
-                        @if($assignment->due_date)
-                            {{ \Carbon\Carbon::parse($assignment->due_date)->format('M d, Y H:i') }}
-                        @else
-                            No due date
                         @endif
                     </td>
                     <td>

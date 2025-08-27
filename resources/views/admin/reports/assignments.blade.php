@@ -72,7 +72,6 @@
                                     <th scope="col">Assignment Title</th>
                                     <th scope="col">Course</th>
                                     <th scope="col">Created By</th>
-                                    <th scope="col">Due Date</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Submissions</th>
                                     <th scope="col">Created Date</th>
@@ -106,22 +105,7 @@
                                                 <span class="text-muted">Unknown</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            @if($assignment->due_date)
-                                                {{ \Carbon\Carbon::parse($assignment->due_date)->format('M d, Y H:i') }}
-                                                @php
-                                                    $dueDate = \Carbon\Carbon::parse($assignment->due_date);
-                                                    $now = \Carbon\Carbon::now();
-                                                @endphp
-                                                @if($dueDate->isPast())
-                                                    <br><small class="text-danger">Overdue</small>
-                                                @elseif($dueDate->diffInDays($now) <= 3)
-                                                    <br><small class="text-warning">Due Soon</small>
-                                                @endif
-                                            @else
-                                                <span class="text-muted">No due date</span>
-                                            @endif
-                                        </td>
+                                        
                                         <td>
                                             @if($assignment->status == 'active')
                                                 <span class="badge bg-success">Active</span>

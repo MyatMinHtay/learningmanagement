@@ -38,7 +38,7 @@
                                 <label for="date_to" class="form-label">To Date</label>
                                 <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request('date_to') }}">
                             </div>
-                            <div class="col-md-2 d-flex align-items-end">
+                            <div class="col-12 d-flex align-items-end">
                                 <button type="submit" class="btn btn-primary me-2">Filter</button>
                                 <a href="{{ route('admin.reports.quizzes') }}" class="btn btn-secondary me-2">Reset</a>
                                 <a href="{{ route('admin.reports.quizzes.pdf', request()->query()) }}" class="btn btn-success">
@@ -63,7 +63,7 @@
                                     <th scope="col">Course</th>
                                     <th scope="col">Created By</th>
                                     <th scope="col">Questions</th>
-                                    <th scope="col">Time Limit</th>
+                                    <th scope="col">Attempt</th>
                                     <th scope="col">Created Date</th>
                                     <th scope="col">Actions</th>
                                 </tr>
@@ -99,7 +99,14 @@
                                         <td>
                                             <span class="badge bg-info">{{ $quiz->questions->count() ?? 0 }} questions</span>
                                         </td>
-                                        <td>{{ $quiz->time_limit ? $quiz->time_limit . ' minutes' : 'No limit' }}</td>
+                                        <td>
+                                            
+                                                @php
+                                                    $attemptCount = $quiz->attempts ? $quiz->attempts->count() : 0;
+                                                @endphp
+                                                <span class="badge badge-secondary text-info">{{ $attemptCount }} attempts</span>
+                                            
+                                        </td>
                                         <td>{{ $quiz->created_at->format('M d, Y H:i') }}</td>
                                         <td>
                                             @if($quiz->course)

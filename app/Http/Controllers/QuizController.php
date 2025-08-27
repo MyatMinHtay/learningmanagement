@@ -576,13 +576,11 @@ class QuizController extends Controller
     public function exportPDF(Request $request)
     {
         try {
-            $query = Quiz::with(['course.creator']);
+            $query = Quiz::with(['course', 'course.creator']);
             
             // Apply the same filters as reportTable method
             if ($request->has('teacher') && $request->teacher != '') {
-                $query->whereHas('course', function($q) use ($request) {
-                    $q->where('created_by', $request->teacher);
-                });
+                $query->where('created_by', $request->teacher);
             }
             
             if ($request->has('course') && $request->course != '') {
@@ -619,11 +617,11 @@ class QuizController extends Controller
     public function exportSubmissionsPDF(Request $request)
     {
         try {
-            $query = QuizAttempt::with(['user', 'quiz.course.creator']);
+            $query = QuizAttempt::with(['user', 'quiz', 'quiz.course']);
             
             // Apply the same filters as submissionReportTable method
             if ($request->has('student') && $request->student != '') {
-                $query->where('user_id', $request->student);
+                $query->where('student_id', $request->student);
             }
             
             if ($request->has('quiz') && $request->quiz != '') {
@@ -636,12 +634,13 @@ class QuizController extends Controller
                 });
             }
             
+            // Filter by grade range (using percentage calculation)
             if ($request->has('grade_min') && $request->grade_min != '') {
-                $query->where('score', '>=', $request->grade_min);
+                $query->whereRaw('(score / (SELECT SUM(marks) FROM questions WHERE quiz_id = quiz_attempts.quiz_id)) * 100 >= ?', [$request->grade_min]);
             }
             
             if ($request->has('grade_max') && $request->grade_max != '') {
-                $query->where('score', '<=', $request->grade_max);
+                $query->whereRaw('(score / (SELECT SUM(marks) FROM questions WHERE quiz_id = quiz_attempts.quiz_id)) * 100 <= ?', [$request->grade_max]);
             }
             
             if ($request->has('date_from') && $request->date_from != '') {
@@ -656,7 +655,7 @@ class QuizController extends Controller
             $students = User::whereHas('role', function($q) {
                 $q->where('role', 'student');
             })->get();
-            $quizzes = Quiz::all();
+            $quizzes = Quiz::with('course')->get();
             $courses = Course::all();
             
             // Generate PDF
