@@ -64,8 +64,8 @@
                                     <th scope="col">Created By</th>
                                     <th scope="col">Questions</th>
                                     <th scope="col">Attempt</th>
+                                    <th scope="col">Time Limit</th>
                                     <th scope="col">Created Date</th>
-                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -107,14 +107,14 @@
                                                 <span class="badge badge-secondary text-info">{{ $attemptCount }} attempts</span>
                                             
                                         </td>
+                                        <td>@if ($quiz->is_time_limited)
+                                        {{ $quiz->total_time }} min
+                                        @else
+                                        No Limit
+                                        @endif
+                                    </td>
                                         <td>{{ $quiz->created_at->format('M d, Y H:i') }}</td>
-                                        <td>
-                                            @if($quiz->course)
-                                                <a href="{{ route('quiz.start', [$quiz->course->id, $quiz->id]) }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                                    <i class="fa fa-play"></i> Preview
-                                                </a>
-                                            @endif
-                                        </td>
+                                        
                                     </tr>
                                 @empty
                                     <tr>

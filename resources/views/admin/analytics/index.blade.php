@@ -310,7 +310,7 @@
             <div class="col-lg-6 mb-4">
                 <div class="analytics-card">
                     <div class="analytics-card-header">
-                        <h5><i class="fas fa-chart-line"></i> Quiz Submissions (31 Days)</h5>
+                        <h5><i class="fas fa-chart-line"></i> Quiz Submissions (Current Month)</h5>
                     </div>
                     <div class="analytics-card-body">
                         <div class="chart-container">
@@ -324,7 +324,7 @@
             <div class="col-lg-6 mb-4">
                 <div class="analytics-card">
                     <div class="analytics-card-header">
-                        <h5><i class="fas fa-chart-bar"></i> Assignment Submissions (31 Days)</h5>
+                        <h5><i class="fas fa-chart-bar"></i> Assignment Submissions (Current Month)</h5>
                     </div>
                     <div class="analytics-card-body">
                         <div class="chart-container">
@@ -361,7 +361,7 @@
                         <div class="chart-container">
                             <canvas id="courseEnrollmentChart" class="chart-canvas"></canvas>
                         </div>
-                        <div class="mt-3">
+                        <!-- <div class="mt-3">
                             <div class="row">
                                 @foreach($courseEnrollmentData->take(4) as $index => $course)
                                 <div class="col-6 mb-2">
@@ -370,7 +370,7 @@
                                 </div>
                                 @endforeach
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -445,39 +445,6 @@
             </div>
         </div>
 
-        <!-- System Activity -->
-        <div class="row pb-5">
-            <div class="col-12">
-                <div class="card system-activity-card">
-                    <div class="analytics-card-header">
-                        <h5><i class="fas fa-heartbeat"></i> System Activity</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="activity-stat">
-                                    <h4>{{ $activeUsersToday }}</h4>
-                                    <p class="mb-0 text-muted">Active Users Today</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="activity-stat">
-                                    <h4>{{ $newRegistrationsThisWeek }}</h4>
-                                    <p class="mb-0 text-muted">New Registrations (Week)</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="activity-stat">
-                                    <h4>{{ $coursesCreatedThisMonth }}</h4>
-                                    <p class="mb-0 text-muted">Courses Created (Month)</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Monthly Activity Comparison Chart -->
         <div class="row mb-4">
             <div class="col-12">
@@ -514,6 +481,39 @@
                                         })->first();
                                     @endphp
                                     <span class="custom-badge badge-success-custom">{{ $mostActiveMonth['month'] ?? 'N/A' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Activity -->
+        <div class="row pb-5">
+            <div class="col-12">
+                <div class="card system-activity-card">
+                    <div class="analytics-card-header">
+                        <h5><i class="fas fa-heartbeat"></i> System Activity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="activity-stat">
+                                    <h4>{{ $activeUsersToday }}</h4>
+                                    <p class="mb-0 text-muted">Active Users Today</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="activity-stat">
+                                    <h4>{{ $newRegistrationsThisWeek }}</h4>
+                                    <p class="mb-0 text-muted">New Registrations (Week)</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="activity-stat">
+                                    <h4>{{ $coursesCreatedThisMonth }}</h4>
+                                    <p class="mb-0 text-muted">Courses Created (Month)</p>
                                 </div>
                             </div>
                         </div>

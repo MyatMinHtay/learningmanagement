@@ -72,7 +72,6 @@
                                     <th scope="col">Assignment Title</th>
                                     <th scope="col">Course</th>
                                     <th scope="col">Created By</th>
-                                    <th scope="col">Status</th>
                                     <th scope="col">Submissions</th>
                                     <th scope="col">Created Date</th>
                                 </tr>
@@ -106,13 +105,7 @@
                                             @endif
                                         </td>
                                         
-                                        <td>
-                                            @if($assignment->status == 'active')
-                                                <span class="badge bg-success">Active</span>
-                                            @else
-                                                <span class="badge bg-secondary">Inactive</span>
-                                            @endif
-                                        </td>
+                                       
                                         <td>
                                             @php
                                                 $submissionCount = $assignment->submissions ? $assignment->submissions->count() : 0;

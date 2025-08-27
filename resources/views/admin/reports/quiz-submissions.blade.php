@@ -86,7 +86,7 @@
                                     <th scope="col">Student</th>
                                     <th scope="col">Quiz</th>
                                     <th scope="col">Course</th>
-                                    <th scope="col">Grade</th>
+                                    <th scope="col">Mark</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Submitted Date</th>
                                     
@@ -125,7 +125,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($submission->is_completed && $submission->quiz)
+                                           @if($submission->is_completed && $submission->quiz)
                                                 @php
                                                     $totalMarks = $submission->quiz->calculateTotalMarks();
                                                     $percentage = $totalMarks > 0 ? ($submission->score / $totalMarks) * 100 : 0;
@@ -133,7 +133,7 @@
                                                     if($percentage < 60) $gradeClass = 'bg-danger';
                                                     elseif($percentage < 80) $gradeClass = 'bg-warning';
                                                 @endphp
-                                                <span class="badge {{ $gradeClass }}">{{ $submission->score }}</span>
+                                                <span class="badge {{ $gradeClass }}">{{ $submission->score }} / {{ $totalMarks }}</span>
                                                 
                                             @else
                                                 <span class="badge bg-secondary">Not Completed</span>
