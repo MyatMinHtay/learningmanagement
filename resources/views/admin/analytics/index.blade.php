@@ -307,10 +307,10 @@
         <!-- Submission Analytics Charts -->
         <div class="row mb-4">
             <!-- Quiz Submissions Trend Chart -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-12 mb-4">
                 <div class="analytics-card">
                     <div class="analytics-card-header">
-                        <h5><i class="fas fa-chart-line"></i> Quiz Submissions (Current Month)</h5>
+                        <h5><i class="fas fa-chart-line"></i> Quiz Submissions (Last 12 Months)</h5>
                     </div>
                     <div class="analytics-card-body">
                         <div class="chart-container">
@@ -321,10 +321,10 @@
             </div>
 
             <!-- Assignment Submissions Trend Chart -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-12 mb-4">
                 <div class="analytics-card">
                     <div class="analytics-card-header">
-                        <h5><i class="fas fa-chart-bar"></i> Assignment Submissions (Current Month)</h5>
+                        <h5><i class="fas fa-chart-bar"></i> Assignment Submissions (Last 12 Months)</h5>
                     </div>
                     <div class="analytics-card-body">
                         <div class="chart-container">
@@ -334,19 +334,7 @@
                 </div>
             </div>
 
-            <!-- Quiz Score Distribution Chart -->
-            {{-- <div class="col-lg-4 mb-4">
-                <div class="analytics-card">
-                    <div class="analytics-card-header">
-                        <h5><i class="fas fa-chart-pie"></i> Quiz Score Distribution</h5>
-                    </div>
-                    <div class="analytics-card-body">
-                        <div class="chart-container">
-                            <canvas id="quizScoreDistributionChart" class="chart-canvas"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div> --}}
+            
         </div>
 
         <!-- Course Enrollment Analytics -->
@@ -885,10 +873,7 @@
         // Quiz Submissions Trend Chart
         const quizSubmissionsCtx = document.getElementById('quizSubmissionsChart').getContext('2d');
         const quizSubmissionsData = @json($quizSubmissionsChart);
-        const quizLabels = quizSubmissionsData.map(item => {
-            const date = new Date(item.date);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        });
+        const quizLabels = quizSubmissionsData.map(item => item.month);
         const quizCounts = quizSubmissionsData.map(item => item.count);
         const quizAvgScores = quizSubmissionsData.map(item => parseFloat(item.avg_score || 0).toFixed(1));
         
@@ -953,10 +938,7 @@
         // Assignment Submissions Bar Chart
         const assignmentSubmissionsCtx = document.getElementById('assignmentSubmissionsChart').getContext('2d');
         const assignmentSubmissionsData = @json($assignmentSubmissionsChart);
-        const assignmentLabels = assignmentSubmissionsData.map(item => {
-            const date = new Date(item.date);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        });
+        const assignmentLabels = assignmentSubmissionsData.map(item => item.month);
         const assignmentCounts = assignmentSubmissionsData.map(item => item.count);
         
         new Chart(assignmentSubmissionsCtx, {

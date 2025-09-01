@@ -141,29 +141,62 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get();
             
-            // Quiz submissions chart data (last 31 days)
-            $quizSubmissionsChart = QuizAttempt::select(
-                DB::raw('DATE(created_at) as date'),
+            // Quiz submissions chart data (last 12 months)
+            $quizSubmissionsRaw = QuizAttempt::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(created_at) as year'),
                 DB::raw('COUNT(*) as count'),
                 DB::raw('AVG(score) as avg_score')
             )
             ->where('is_completed', true)
-            ->where('created_at', '>=', now()->subDays(31))
-            ->groupBy('date')
-            ->orderBy('date', 'asc')
-            ->get();
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy(function($item) {
+                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+            });
             
-            // Assignment submissions chart data (last 31 days)
-            $assignmentSubmissionsChart = Assignment::select(
-                DB::raw('DATE(created_at) as date'),
+            // Assignment submissions chart data (last 12 months)
+            $assignmentSubmissionsRaw = Assignment::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(created_at) as year'),
                 DB::raw('COUNT(*) as count')
             )
             ->whereNotNull('student_id')
             ->whereNotNull('files')
-            ->where('created_at', '>=', now()->subDays(31))
-            ->groupBy('date')
-            ->orderBy('date', 'asc')
-            ->get();
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get()
+            ->keyBy(function($item) {
+                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+            });
+            
+            // Create complete 12-month datasets with zero values for missing months
+            $quizSubmissionsChart = collect();
+            $assignmentSubmissionsChart = collect();
+            
+            for ($i = 11; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+                $key = $date->format('Y-m');
+                $monthName = $date->format('M Y');
+                
+                $quizSubmissionsChart->push([
+                    'month' => $monthName,
+                    'month_key' => $key,
+                    'count' => $quizSubmissionsRaw->get($key)->count ?? 0,
+                    'avg_score' => $quizSubmissionsRaw->get($key)->avg_score ?? 0,
+                ]);
+                
+                $assignmentSubmissionsChart->push([
+                    'month' => $monthName,
+                    'month_key' => $key,
+                    'count' => $assignmentSubmissionsRaw->get($key)->count ?? 0,
+                ]);
+            }
             
             // Quiz score distribution for pie chart
             $quizScoreDistribution = QuizAttempt::select(
