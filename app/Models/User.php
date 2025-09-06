@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\QuizAttempt;
+use App\Models\Assignment;
 
 
 class User extends Authenticatable
@@ -90,7 +92,7 @@ class User extends Authenticatable
 
     public function courses()
     {
-        return $this->belongsToMany(Course::class, 'course_students', 'student_id', 'course_id');
+        return $this->belongsToMany(Course::class, 'course_students', 'student_id', 'course_id')->withPivot('created_at');
     }
 
     public function notifications()
@@ -101,6 +103,16 @@ class User extends Authenticatable
     public function sentNotifications()
     {
         return $this->hasMany(Notification::class, 'sender_id');
+    }
+
+    public function quizAttempts()
+    {
+        return $this->hasMany(QuizAttempt::class, 'student_id');
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'student_id');
     }
 
 }

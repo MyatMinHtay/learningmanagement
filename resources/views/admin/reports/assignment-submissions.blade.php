@@ -34,9 +34,9 @@
                                 <label for="status" class="form-label">Filter by Status</label>
                                 <select name="status" id="status" class="form-select">
                                     <option value="">All Status</option>
-                                    <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Submitted</option>
-                                    <option value="graded" {{ request('status') == 'graded' ? 'selected' : '' }}>Graded</option>
-                                    <option value="late" {{ request('status') == 'late' ? 'selected' : '' }}>Late Submission</option>
+                                    <option value="accepted" {{ request('status') == 'accepted' ? 'selected' : '' }}>Accepted</option>
+                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -126,16 +126,16 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($submission->mark !== null)
-                                                <span class="badge bg-success">Graded</span>
+                                            @if($submission->mark !== 0)
+                                                <span class="badge bg-success">Accepted</span>
                                             @elseif($submission->files && $submission->files != '[]')
-                                                <span class="badge bg-info">Submitted</span>
+                                                <span class="badge bg-info">Pending</span>
                                             @else
                                                 <span class="badge bg-secondary">Not Submitted</span>
                                             @endif
                                         </td>
                                         <td>
-                                            @if($submission->mark !== null)
+                                            @if($submission->mark !== 0)
                                                 @php
                                                     $gradeClass = 'bg-success';
                                                     

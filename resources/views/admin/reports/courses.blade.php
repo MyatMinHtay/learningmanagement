@@ -70,6 +70,7 @@
                                     <th scope="col">Duration</th>
                                     <th scope="col">Created Date</th>
                                     <th scope="col">Actions</th>
+                                    <th scope="col">Details</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -107,6 +108,11 @@
                                         <td>
                                             <a href="{{ route('courses.show', $course->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
                                                 <i class="fa fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('courses.details', $course->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                <i class="fa fa-eye"></i> Details
                                             </a>
                                         </td>
                                     </tr>

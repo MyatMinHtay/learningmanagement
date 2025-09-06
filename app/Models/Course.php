@@ -21,7 +21,8 @@ class Course extends Model
 
     public function students()
     {
-        return $this->belongsToMany(User::class, 'course_students', 'course_id', 'student_id');
+        return $this->belongsToMany(User::class, 'course_students', 'course_id', 'student_id')
+                    ->withPivot('created_at');
     }
 
     public function modules()
@@ -32,6 +33,11 @@ class Course extends Model
     public function quizzes()
     {
         return $this->hasOne(Quiz::class);
+    }
+
+    public function coursequizzes()
+    {
+        return $this->hasMany(Quiz::class);
     }
 
     public function lessons()

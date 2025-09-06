@@ -126,16 +126,16 @@
                         @endif
                     </td>
                     <td>
-                        @if($submission->mark !== null)
-                            <span class="badge badge-success">Graded</span>
+                        @if($submission->mark !== 0)
+                            <span class="badge badge-success">Accepted</span>
                         @elseif($submission->files && $submission->files != '[]')
-                            <span class="badge badge-info">Submitted</span>
+                            <span class="badge badge-info">Pending</span>
                         @else
                             <span class="badge badge-secondary">Not Submitted</span>
                         @endif
                     </td>
                     <td>
-                        @if($submission->mark !== null)
+                        @if($submission->mark !== 0)
                             {{ $submission->mark }}
                         @else
                             Not Graded

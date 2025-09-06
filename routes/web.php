@@ -9,7 +9,9 @@ use App\Http\Controllers\{
     SystemRoleController,
     GlobalSearchController,
     CourseController,
+    CourseDetailsController,
     CourseCategoryController,
+    StudentController,
     LessonController,
     QuizController,
     ForgotPasswordController,
@@ -200,6 +202,11 @@ Route::middleware(['auth', 'admincheck:users'])->group(function () {
         Route::get('/delete/{role:role}', [SystemRoleController::class, 'deleterole'])->where('role', '[A-z\d\-_]+');
     });
     
+    // Course Details Routes
+    Route::get('/courses/{course}/details', [CourseDetailsController::class, 'show'])->name('courses.details');
+    Route::get('/courses/{course}/details/pdf', [CourseDetailsController::class, 'exportPDF'])->name('courses.details.pdf');
+    Route::get('/courses/{course}/students', [CourseDetailsController::class, 'getEnrolledStudents'])->name('courses.students');
+    
     // Admin Report Tables
     Route::prefix('admin/reports')->middleware('admincheck:admins')->group(function () {
         Route::get('/courses', [CourseController::class, 'reportTable'])->name('admin.reports.courses');
@@ -212,5 +219,13 @@ Route::middleware(['auth', 'admincheck:users'])->group(function () {
         Route::get('/assignments/export-pdf', [AssignmentController::class, 'exportPDF'])->name('admin.reports.assignments.pdf');
         Route::get('/assignment-submissions', [AssignmentController::class, 'submissionReportTable'])->name('admin.reports.assignment-submissions');
         Route::get('/assignment-submissions/export-pdf', [AssignmentController::class, 'exportSubmissionsPDF'])->name('admin.reports.assignment-submissions.pdf');
+    });
+
+    // Student Details Routes
+    Route::middleware(['admincheck:admins,teachers'])->group(function () {
+        Route::get('/students/{student}/details', [StudentController::class, 'show'])->name('students.details');
+        Route::get('/students/{student}/courses', [StudentController::class, 'getCourses'])->name('students.courses');
+        Route::get('/students/{student}/quizzes', [StudentController::class, 'getQuizAttempts'])->name('students.quizzes');
+        Route::get('/students/{student}/assignments', [StudentController::class, 'getAssignments'])->name('students.assignments');
     });
 });
