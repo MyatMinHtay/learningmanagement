@@ -106,12 +106,12 @@
                                         <td>{{ $course->duration ?? 'Not specified' }}</td>
                                         <td>{{ $course->created_at->format('M d, Y H:i') }}</td>
                                         <td>
-                                            <a href="{{ route('courses.show', $course->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <a href="{{ route('courses.show', $course->id) }}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fa fa-eye"></i> View
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="{{ route('courses.details', $course->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <a href="{{ route('courses.details', $course->id) }}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fa fa-eye"></i> Details
                                             </a>
                                         </td>

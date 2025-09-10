@@ -30,19 +30,11 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-2">
-                                <label for="status" class="form-label">Filter by Status</label>
-                                <select name="status" id="status" class="form-select">
-                                    <option value="">All Status</option>
-                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
-                                    <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label for="date_from" class="form-label">From Date</label>
                                 <input type="date" name="date_from" id="date_from" class="form-control" value="{{ request('date_from') }}">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label for="date_to" class="form-label">To Date</label>
                                 <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request('date_to') }}">
                             </div>
@@ -70,9 +62,10 @@
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">Assignment Title</th>
+                                    <th scope="col">Assignment Question</th>
                                     <th scope="col">Course</th>
                                     <th scope="col">Created By</th>
-                                    <th scope="col">Submissions</th>
+                                    <th scope="col">Deadline</th>
                                     <th scope="col">Created Date</th>
                                 </tr>
                             </thead>
@@ -82,8 +75,14 @@
                                         <th scope="row">{{ $loop->iteration + ($assignments->currentPage() - 1) * $assignments->perPage() }}</th>
                                         <td>
                                             <strong>{{ $assignment->assignment_title ?? 'Untitled Assignment' }}</strong>
-                                            @if($assignment->description)
-                                                <br><small class="text-muted">{{ Str::limit($assignment->description, 50) }}</small>
+                                        </td>
+                                        <td>
+                                            @if($assignment->assignment_question)
+                                                <div class="text-wrap" style="max-width: 300px;">
+                                                    {{ Str::limit($assignment->assignment_question, 100) }}
+                                                </div>
+                                            @else
+                                                <span class="text-muted">No question provided</span>
                                             @endif
                                         </td>
                                         <td>
@@ -97,30 +96,30 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($assignment->course && $assignment->course->creator)
-                                                <strong>{{ $assignment->course->creator->username }}</strong>
-                                                <br><small class="text-muted">{{ $assignment->course->creator->email }}</small>
+                                            @if($assignment->teacher)
+                                                <strong>{{ $assignment->teacher->username }}</strong>
+                                                <br><small class="text-muted">{{ $assignment->teacher->email }}</small>
                                             @else
                                                 <span class="text-muted">Unknown</span>
                                             @endif
                                         </td>
-                                        
-                                       
                                         <td>
-                                            @php
-                                                $submissionCount = $assignment->submissions ? $assignment->submissions->count() : 0;
-                                                $enrolledCount = $assignment->course && $assignment->course->students ? $assignment->course->students->count() : 0;
-                                            @endphp
-                                            <span class="badge bg-info">{{ $submissionCount }} / {{ $enrolledCount }}</span>
-                                            @if($enrolledCount > 0)
-                                                <br><small class="text-muted">{{ number_format(($submissionCount / $enrolledCount) * 100, 1) }}% submitted</small>
+                                            @if($assignment->deadline_date)
+                                                <span class="badge bg-warning">{{ \Carbon\Carbon::parse($assignment->deadline_date)->format('M d, Y') }}</span>
+                                                @if(\Carbon\Carbon::parse($assignment->deadline_date)->isPast())
+                                                    <br><small class="text-danger">Overdue</small>
+                                                @else
+                                                    <br><small class="text-success">Active</small>
+                                                @endif
+                                            @else
+                                                <span class="text-muted">No deadline</span>
                                             @endif
                                         </td>
                                         <td>{{ $assignment->created_at->format('M d, Y H:i') }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center py-4">
+                                        <td colspan="7" class="text-center py-4">
                                             <div class="text-muted">
                                                 <i class="fa fa-inbox fa-3x mb-3"></i>
                                                 <p>No assignments found matching your criteria.</p>

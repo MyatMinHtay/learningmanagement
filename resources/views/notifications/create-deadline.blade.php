@@ -86,6 +86,20 @@
                                         <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
                                     </div>
                                 @enderror
+
+                                <div class="mt-5">
+                                    <label for="assignment_question" class="form-label fw-bold">
+                                    <i class="fas fa-file-alt text-primary me-2"></i>Assignment Question
+                                </label>
+                                    <textarea name="assignment_question" rows="2" id="assignment_question" class="form-control form-control-lg" 
+                                       placeholder="Assignment Question">{{ old('assignment_question') }}</textarea>
+
+                                @error('assignment_question')
+                                    <div class="text-danger mt-2">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                                    </div>
+                                @enderror
+                                </div>
                             </div>
 
                             <!-- Title Input -->

@@ -154,7 +154,7 @@
         </div>
         <div class="info-row">
             <div class="info-label">Duration:</div>
-            <div class="info-value">{{ $course->duration ? $course->duration . ' hours' : 'Not specified' }}</div>
+            <div class="info-value">{{ $course->duration ? $course->duration : 'Not specified' }}</div>
         </div>
         <div class="info-row">
             <div class="info-label">Created Date:</div>

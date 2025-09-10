@@ -62,9 +62,7 @@
         @if($request->course)
             <p><strong>Course:</strong> {{ $request->course }}</p>
         @endif
-        @if($request->status)
-            <p><strong>Status:</strong> {{ ucfirst($request->status) }}</p>
-        @endif
+
         @if($request->date_from)
             <p><strong>From Date:</strong> {{ $request->date_from }}</p>
         @endif
@@ -83,10 +81,10 @@
             <tr>
                 <th>#</th>
                 <th>Assignment Title</th>
+                <th>Assignment Question</th>
                 <th>Course</th>
                 <th>Created By</th>
-                <th>Status</th>
-                <th>Submissions</th>
+                <th>Deadline</th>
                 <th>Created Date</th>
             </tr>
         </thead>
@@ -95,6 +93,13 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $assignment->assignment_title ?? 'Untitled Assignment' }}</td>
+                    <td>
+                        @if($assignment->assignment_question)
+                            {{ Str::limit($assignment->assignment_question, 80) }}
+                        @else
+                            No question provided
+                        @endif
+                    </td>
                     <td>
                         @if($assignment->course)
                             {{ $assignment->course->name }}
@@ -106,34 +111,29 @@
                         @endif
                     </td>
                     <td>
-                        @if($assignment->course && $assignment->course->creator)
-                            {{ $assignment->course->creator->username }}
+                        @if($assignment->teacher)
+                            {{ $assignment->teacher->username }}
                         @else
                             Unknown
                         @endif
                     </td>
                     <td>
-                        @if($assignment->status == 'active')
-                            <span class="badge badge-success">Active</span>
+                        @if($assignment->deadline_date)
+                            {{ \Carbon\Carbon::parse($assignment->deadline_date)->format('M d, Y') }}
+                            @if(\Carbon\Carbon::parse($assignment->deadline_date)->isPast())
+                                <br><small class="text-muted">(Overdue)</small>
+                            @else
+                                <br><small class="text-muted">(Active)</small>
+                            @endif
                         @else
-                            <span class="badge badge-secondary">Inactive</span>
-                        @endif
-                    </td>
-                    <td>
-                        @php
-                            $submissionCount = $assignment->submissions ? $assignment->submissions->count() : 0;
-                            $enrolledCount = $assignment->course && $assignment->course->students ? $assignment->course->students->count() : 0;
-                        @endphp
-                        {{ $submissionCount }} / {{ $enrolledCount }}
-                        @if($enrolledCount > 0)
-                            <br><small>({{ number_format(($submissionCount / $enrolledCount) * 100, 1) }}%)</small>
+                            No deadline
                         @endif
                     </td>
                     <td>{{ $assignment->created_at->format('M d, Y H:i') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" style="text-align: center;">No assignments found matching your criteria.</td>
+                    <td colspan="7" style="text-align: center;">No assignments found matching your criteria.</td>
                 </tr>
             @endforelse
         </tbody>

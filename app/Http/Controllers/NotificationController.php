@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use App\Models\Course;
+use App\Models\TeacherAssignment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -186,6 +187,7 @@ class NotificationController extends Controller
                 'course_id' => 'required|exists:courses,id',
                 'type' => 'required|in:quiz_deadline,assignment_deadline',
                 'assignment_title' => ['nullable', 'string', 'max:255'],
+                'assignment_question' => ['nullable', 'string'],
                 'title' => 'required|string|max:255',
                 'message' => 'required|string',
                 'deadline_date' => 'required|date|after:now',
@@ -222,7 +224,25 @@ class NotificationController extends Controller
             // Add assignment title if it's an assignment deadline
             if ($request->type === 'assignment_deadline') {
                 $notificationData['assignment_title'] = $request->assignment_title;
+
+                $assignmentdata = [
+                    'course_id' => $course->id,
+                    'teacher_id' => auth()->id(),
+                    'assignment_title' => $request->assignment_title,
+                    'assignment_question' => $request->assignment_question,
+                    'deadline_date' => $request->deadline_date,
+                ];
+
+                try {
+                    TeacherAssignment::create($assignmentdata);
+                } catch (Exception $e) {
+                    Log::error('Error in createDeadlineForm: ' . $e->getMessage());
+                    return redirect()->back()->with('error', $e->getMessage());
+                }
+                
             }
+
+
 
             // Create deadline notifications for all enrolled students
             Notification::createDeadlineNotification(

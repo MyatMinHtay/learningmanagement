@@ -243,25 +243,18 @@ class AssignmentController extends Controller
     public function reportTable(Request $request)
     {
         try {
-            $query = Assignment::with(['course', 'course.creator', 'student'])
+            $query = \App\Models\TeacherAssignment::with(['course', 'course.creator', 'teacher'])
                 ->whereNotNull('assignment_title')
                 ->where('assignment_title', '!=', '');
             
             // Filter by teacher/creator
             if ($request->has('teacher') && $request->teacher != '') {
-                $query->whereHas('course', function($q) use ($request) {
-                    $q->where('created_by', $request->teacher);
-                });
+                $query->where('teacher_id', $request->teacher);
             }
             
             // Filter by course
             if ($request->has('course') && $request->course != '') {
                 $query->where('course_id', $request->course);
-            }
-            
-            // Filter by status
-            if ($request->has('status') && $request->status != '') {
-                $query->where('status', $request->status);
             }
             
             // Filter by date range
@@ -351,23 +344,17 @@ class AssignmentController extends Controller
     public function exportPDF(Request $request)
     {
         try {
-            $query = Assignment::with(['course', 'course.creator', 'course.students', 'student'])
+            $query = \App\Models\TeacherAssignment::with(['course', 'course.creator', 'teacher'])
                 ->whereNotNull('assignment_title')
                 ->where('assignment_title', '!=', '');
             
             // Apply the same filters as reportTable method
             if ($request->has('teacher') && $request->teacher != '') {
-                $query->whereHas('course', function($q) use ($request) {
-                    $q->where('created_by', $request->teacher);
-                });
+                $query->where('teacher_id', $request->teacher);
             }
             
             if ($request->has('course') && $request->course != '') {
                 $query->where('course_id', $request->course);
-            }
-            
-            if ($request->has('status') && $request->status != '') {
-                $query->where('status', $request->status);
             }
             
             if ($request->has('date_from') && $request->date_from != '') {

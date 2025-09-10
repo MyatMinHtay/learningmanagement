@@ -67,7 +67,7 @@
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-sm-3"><strong>Duration:</strong></div>
-                                    <div class="col-sm-9">{{ $course->duration ? $course->duration . ' hours' : 'Not specified' }}</div>
+                                    <div class="col-sm-9">{{ $course->duration ? $course->duration : 'Not specified' }}</div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-sm-3"><strong>Created Date:</strong></div>
