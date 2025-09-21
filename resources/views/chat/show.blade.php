@@ -24,9 +24,17 @@
                                 <span id="typing-indicator" class="text-white-50 small me-3" style="display: none;">
                                     <i class="fas fa-circle text-success"></i> Online
                                 </span>
-                                <a href="{{ route('chat.index') }}" class="btn btn-light btn-sm">
-                                    <i class="fas fa-arrow-left"></i> Back
-                                </a>
+
+                                @if (auth()->user()->role->role == 'teacher')
+                                    <a href="{{ route('chat.index') }}" class="btn btn-light btn-sm">
+                                        <i class="fas fa-arrow-left"></i> Back
+                                    </a>
+                                @elseif (auth()->user()->role->role == 'student')
+                                    <a href="{{ route('student.chat.index') }}" class="btn btn-light btn-sm">
+                                        <i class="fas fa-arrow-left"></i> Back
+                                    </a>
+                                @endif
+                                
                             </div>
                         </div>
                     </div>

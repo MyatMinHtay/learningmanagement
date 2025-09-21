@@ -36,8 +36,8 @@
                                              <span class="rounded-pill rolepill">no permission</span>
                                         @endforelse
                                    </td>
-                                   <td scope="row"><a href="/admin/roles/edit/{{$role->role}}"  class="btn btn-warning">Edit</a></td>
-                                   <td scope="row"><a href="/admin/roles/delete/{{$role->role}}" class="btn btn-danger">Delete</a></td>
+                                   <td scope="row"><a href="{{ route('admin.roles.edit', $role->role) }}"  class="btn btn-warning">Edit</a></td>
+                                   <td scope="row"><a href="{{ route('admin.roles.delete', $role->role) }}" class="btn btn-danger">Delete</a></td>
                               </tr>
                               
                               
@@ -60,7 +60,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
 
-              <form action="/admin/roles/create" method="POST" >
+              <form action="{{ route('admin.roles.create') }}" method="POST" >
                @csrf
               <div class="modal-body">
                     <div class="form-group">

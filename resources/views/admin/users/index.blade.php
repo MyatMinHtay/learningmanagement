@@ -58,10 +58,10 @@
 
         <div class="col-12 d-flex my-3">
           <div class="btn-group" role="group" aria-label="Basic outlined example">
-              <a href="/admin/users" class="btn menubtns{{ !request()->filled('role') ? ' btn-bg-2' : '' }}">All</a>
-              @foreach ($systemroles as $systemrole)
-                  <a href="/admin/users?role={{ $systemrole->role }}" class="btn menubtns{{ request('role') === $systemrole->role ? ' btn-bg-2' : '' }}">{{ $systemrole->role }}</a>
-              @endforeach
+              <a href="{{ route('admin.users.index') }}" class="btn menubtns{{ !request()->filled('role') ? ' btn-bg-2' : '' }}">All</a>
+                         @forelse ($systemroles as $systemrole)
+                         <a href="{{ route('admin.users.index', ['role' => $systemrole->role]) }}" class="btn menubtns{{ request('role') === $systemrole->role ? ' btn-bg-2' : '' }}">{{ $systemrole->role }}</a>
+                        @endforeach
           </div>
       </div>
       
@@ -98,10 +98,10 @@
                                    <td scope="row">{{$user->email}}</td>
                                  
                                   
-                                   <td scope="row" class="text-center"><a href="/admin/users/edit/{{$user->username}}"  class="btn btn-info"><i class="fa-solid fa-pen-to-square"></i></a></td>
-                                   
-                                  
-                                   <td scope="row" class="text-center"><a href="/admin/users/delete/{{$user->username}}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a></td>
+                                   <td scope="row" class="text-center"><a href="{{ route('admin.users.edit', $user->username) }}"  class="btn btn-info"><i class="fa-solid fa-pen-to-square"></i></a></td>
+                                   @if (auth()->user()->role->role == "adminstrator")
+                                   <td scope="row" class="text-center"><a href="{{ route('admin.users.delete', $user->username) }}" class="btn btn-danger"><i class="fa-solid fa-trash"></i></a></td>
+                                   @endif
                               </tr>
                               
                               
@@ -139,7 +139,7 @@
   
                    
                         <div class="col-12 col-md-6">
-                            <form action="/admin/users/create" class="signupbox" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('admin.users.create') }}" class="signupbox" method="POST" enctype="multipart/form-data">
                               @csrf
                               <h3 class="text-center fontcolor">Add User</h3>
                               

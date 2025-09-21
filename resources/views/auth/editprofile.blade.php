@@ -5,7 +5,7 @@
             <div class="card shadow-sm p-4">
                 <h2 class="mb-4">Edit Profile</h2>
 
-                <form action="{{ route('profile.update', $user->username) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('profile.update', $user->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     {{-- If you want to use PUT --}}
                     {{-- @method('PUT') --}}

@@ -79,8 +79,8 @@
 
                             <div class="col-12 d-flex justify-content-end align-items-center">
                                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i></button>
-                            <a href="/admin/users/lock/{{$user->username}}" class="btn btn-warning mx-1"><i class="fa-solid fa-lock"></i></a>
-                                    <a href="/admin/users/unlock/{{$user->username}}" class="btn btn-success mx-1"><i class="fa-solid fa-lock-open"></i></a>
+                            <a href="{{ route('admin.users.lock', $user->username) }}" class="btn btn-warning mx-1"><i class="fa-solid fa-lock"></i></a>
+                              <a href="{{ route('admin.users.unlock', $user->username) }}" class="btn btn-success mx-1"><i class="fa-solid fa-lock-open"></i></a>
                             </div>
                         </form>
                     </div>

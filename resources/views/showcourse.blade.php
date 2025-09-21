@@ -47,7 +47,7 @@
     @endphp
 
     @if($isEnrolled)
-        <a href="{{ url('/courses/' . $course->id . '/lessons') }}" class="btn btn-success">
+        <a href="{{ route('showlesson', $course->id) }}" class="btn btn-success">
             Go to Lessons
         </a>
     @endif
@@ -86,9 +86,8 @@
         $('#enrollBtn').on('click', function () {
             const courseId = $(this).data('course-id');
 
-
             $.ajax({
-                url: `/courses/${courseId}/enroll`,
+                url: "{{ route('courses.enroll', ':courseId') }}".replace(':courseId', courseId),
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -96,11 +95,15 @@
                 success: function (res) {
                     $('#enrollMsg').html(`<div class="alert alert-success">${res.message}</div>`);
                     $('#enrollBtn').prop('disabled', true).text('Enrolled');
-                    
-                    // Create and show the "Go to Lessons" button immediately
-                    const goToLessonsBtn = `<a href="/courses/${courseId}/lessons" class="btn btn-success">
-                        <i class="fas fa-play me-2"></i>Go to Lessons
-                    </a>`;
+
+                    // ✅ Apply .replace() outside the template string
+                    const goToLessonsBtn = `
+                        <a href="{{ route('showlesson', ':courseId') }}" 
+                        class="btn btn-success">
+                            <i class="fas fa-play me-2"></i>Go to Lessons
+                        </a>
+                    `.replace(':courseId', courseId);
+
                     $('#golessondiv').html(goToLessonsBtn);
                 },
                 error: function (xhr) {
@@ -109,5 +112,6 @@
                 }
             });
         });
+
     });
 </script>

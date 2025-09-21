@@ -24,7 +24,7 @@ class AdminCheck
         
         // Check if user is authenticated
         if (!$user) {
-            return redirect('/login')->with('warning', 'You must login!');
+            return redirect()->route('studentlogin')->with('warning', 'You must login!');
         }
 
       

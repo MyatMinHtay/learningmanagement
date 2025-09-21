@@ -58,7 +58,7 @@ class SystemRoleController extends Controller
                 $formData['permissions'] = implode(",",$formData['permissions']);
 
                 $newrole = SystemRole::create($formData);
-                return redirect()->route('roles')->with('success','Genre Created Successfully');
+                return redirect()->route('admin.roles.index')->with('success','Genre Created Successfully');
           }catch(QueryException $e){
                 return redirect()->back()->withErrors(['error'=>$e->getMessage()]);
           }
@@ -115,7 +115,7 @@ class SystemRoleController extends Controller
            
             $role->update($validatedData);
 
-            return redirect()->route('roles')->with('success','Role Update Successfully');
+            return redirect()->route('admin.roles.index')->with('success','Role Update Successfully');
         }catch(QueryException $e){
             return redirect()->back()->withErrors(['error'=>$e->getMessage()]);
         }
@@ -143,7 +143,7 @@ class SystemRoleController extends Controller
                 }else{
                     try{
                         $role->delete();
-                        return redirect()->route('roles')->with('success',"Role Delete Successfully");
+                        return redirect()->route('admin.roles.index')->with('success',"Role Delete Successfully");
                 }catch(QueryException $e){
                     // Handle foreign key constraint violations (role still in use)
                     if ($e->errorInfo[1] == 1451) {

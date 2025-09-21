@@ -126,7 +126,7 @@ class AuthController extends Controller
             // Auto-login user after successful registration
             auth()->login($user, $remember = true);
 
-            return redirect('/')->with('success', 'Welcome Dear, ' . $user->username);
+            return redirect()->route('homeslug')->with('success', 'Welcome Dear, ' . $user->username);
 
         } catch (Exception $e) {
             Log::error('Error in auth store: ' . $e->getMessage());
@@ -293,11 +293,11 @@ class AuthController extends Controller
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            return redirect('/')->with('success',"Good Bye");
+            return redirect()->route('homeslug')->with('success',"Good Bye");
 
         } catch (Exception $e) {
             Log::error('Error in logout: ' . $e->getMessage());
-            return redirect('/')->with('error', 'Logout completed with some issues.');
+            return redirect()->route('homeslug')->with('error', 'Logout completed with some issues.');
         }
     }
 

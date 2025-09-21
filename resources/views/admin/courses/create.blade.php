@@ -39,7 +39,7 @@
                 </div>
 
                 <div class="col-md-12">
-                    <label for="duration">Duration (days)</label>
+                    <label for="duration">Duration (months)</label>
                     <input type="number" name="duration" class="form-control" value="{{ old('duration') }}">
                     <x-error name="duration" />
                 </div>

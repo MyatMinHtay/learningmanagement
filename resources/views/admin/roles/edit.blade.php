@@ -2,7 +2,7 @@
      <div class="container my-3">
          
 
-          <form action="/admin/roles/update/{{$role->role}}" class="bg-color p-3" method="POST" >
+          <form action="{{ route('admin.roles.update', $role->role) }}" class="bg-color p-3" method="POST" >
                @csrf
                <h1>Edit role</h1>
                     <div class="form-group mb-3">

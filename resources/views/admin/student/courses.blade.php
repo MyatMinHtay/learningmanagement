@@ -36,14 +36,14 @@
                                 </a>
                             </td>
                             <td class="text-center">
-                                <a href="{{ route('assignments.create', [$course->id, auth()->user()->id]) }}" class="btn btn-info">
+                                <a href="{{ route('assignments.create') }}" class="btn btn-info">
                                     <i class="fa-solid fa-a fs-5 icon"></i>
                                 </a>
                                 
                             </td>
                             <td class="text-center">
                                 @if($course->quizzes)
-                                    <a href="{{ route('quiz.start', [$course->id,$course->quizzes->id]) }}" class="btn btn-success">
+                                    <a href="{{ route('quiz.start', ['course' => $course->id, 'quiz' => $course->quizzes->id]) }}" class="btn btn-success">
                                         <i class="fa-solid fa-q fs-5 icon"></i>
                                     </a>
                                 @else

@@ -108,7 +108,7 @@
 
 
                             <div class="d-grid mt-5 mx-auto">
-                              <p>Already have a account? <a href="/login" class="bgfontcolor">Login</a> </p>
+                              <p>Already have a account? <a href="{{ route('studentlogin') }}" class="bgfontcolor">Login</a> </p>
                               <button type="submit" id="submitbtn" name="submitLogin" class="btn rounded-5 btn-success">Sign up</button>
 
                             </div>

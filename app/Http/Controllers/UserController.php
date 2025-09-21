@@ -125,7 +125,7 @@ class UserController extends Controller
             if(auth()->check()){
                 return redirect()->back()->with('success', 'User ' . $user->username . '  Account Created Successfully ');
             }else{
-                return redirect()->route('login')->with('success', 'User ' . $user->username . '  Account Created Successfully Please Login');
+                return redirect()->route('studentlogin')->with('success', 'User ' . $user->username . '  Account Created Successfully Please Login');
             }
 
         } catch (QueryException $e) {
@@ -214,7 +214,7 @@ class UserController extends Controller
         try {
             $user->update($formData);
 
-            return redirect()->route('users')->with('success', 'User updated successfully');
+            return redirect()->route('admin.users.index')->with('success', 'User updated successfully');
         } catch (QueryException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -247,7 +247,7 @@ class UserController extends Controller
             $user->status = "L";
             $user->save();
 
-            return redirect()->route('users')->with('success', 'User Account Locked Successfully');
+            return redirect()->route('admin.users.index')->with('success', 'User Account Locked Successfully');
         } catch (QueryException $e) {
             Log::error('Error in lockuser: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Failed to lock user account. Please try again.']);
@@ -264,7 +264,7 @@ class UserController extends Controller
             $user->status = "A";
             $user->save();
 
-            return redirect()->route('users')->with('success', 'User Account Unlocked Successfully');
+            return redirect()->route('admin.users.index')->with('success', 'User Account Unlocked Successfully');
         } catch (QueryException $e) {
             Log::error('Error in unlockuser: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Failed to unlock user account. Please try again.']);

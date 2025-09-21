@@ -80,8 +80,8 @@
                 <th>Quiz Title</th>
                 <th>Course</th>
                 <th>Created By</th>
-                <th>Questions</th>
-                <th>Attempts</th>
+                <th style="width: 10%">Questions</th>
+                <th style="width: 10%">Attempts</th>
                 <th>Created Date</th>
             </tr>
         </thead>

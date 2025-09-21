@@ -4,11 +4,11 @@
         <div class="container loginbox displayFixer py-3">
             <div class="col-12 col-sm-8 col-lg-5 mx-auto p-3 loginformContainer student-theme" id="loginContainer">
                 <div class="d-flex justify-content-center mb-3">
-                    <a href="/studentlogin" class="btn mx-1 role-btn active"
+                    <a href="{{ route('studentlogin') }}" class="btn mx-1 role-btn active"
                         data-role="student">Student</a>
-                    <a href="/teacherlogin" class="btn mx-1 role-btn"
+                    <a href="{{ route('teacherlogin') }}" class="btn mx-1 role-btn"
                         data-role="teacher">Teacher</a>
-                    <a href="/adminlogin" class="btn mx-1 role-btn" data-role="admin">Admin</a>
+                    <a href="{{ route('adminlogin') }}" class="btn mx-1 role-btn" data-role="admin">Admin</a>
                 </div>
                 <h2 class="text-center" id="loginTitle">Student Login</h2>
                 <form action="{{ route('page.login') }}" class="loginForm" method="post">

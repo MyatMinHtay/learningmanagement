@@ -1,7 +1,7 @@
 <div class="container-fluid">
      <nav class="navbar bg-body-tertiary sticky-top">
           <div class="container-fluid">
-               <a class="navbar-brand fontcolor" href="/">Learning Management</a>
+               <a class="navbar-brand fontcolor" href="{{ route('homeslug') }}">Learning Management</a>
                
                <div class="d-flex align-items-center">
                     <div class="userimgcontainer me-2" style="background: url('{{ asset(auth()->user()->userphoto) }}'); background-position: center; background-repeat: no-repeat; background-size: cover; width: 40px; height: 40px; border-radius: 50%;">
@@ -23,7 +23,7 @@
                     <a href="{{ route('student.courses', auth()->user()->id) }}" class="btn {{ request()->routeIs('student.courses') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
                          <i class="fa-solid fa-c"></i> Courses
                     </a>
-                    <a href="{{ route('student.assignments.index') }}" class="btn {{ request()->routeIs('assignments.*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">
+                    <a href="{{ route('student.assignments.index') }}" class="btn {{ request()->routeIs('student.assignments.*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">
                          <i class="fa-solid fa-a"></i> Assignments
                     </a>
                     <a href="{{ route('student.quizzes', auth()->user()->id) }}" class="btn {{ request()->routeIs('student.quizzes') ? 'btn-info' : 'btn-outline-info' }} me-2" type="button">
@@ -63,10 +63,10 @@
                @endif
 
                @if (auth()->user()->role->role == 'adminstrator')
-                    <a href="/admin/roles" class="btn {{ request()->is('admin/roles*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
+                    <a href="{{ route('admin.roles.index') }}" class="btn {{ request()->is('admin/roles*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
                          <i class="fa-solid fa-r"></i> Roles
                     </a>
-                    <a href="/admin/users" class="btn {{ request()->is('admin/users*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">
+                    <a href="{{ route('admin.users.index') }}" class="btn {{ request()->is('admin/users*') ? 'btn-success' : 'btn-outline-success' }} me-2" type="button">
                          <i class="fa-solid fa-u"></i> Users
                     </a>
                     <a href="{{ route('admin.analytics') }}" class="btn {{ request()->is('admin/analytics*') ? 'btn-primary' : 'btn-outline-primary' }} me-2" type="button">
@@ -79,11 +79,11 @@
                               <i class="fa-solid fa-table"></i> Reports
                          </button>
                          <ul class="dropdown-menu">
-                              <li><a class="dropdown-item" href="/admin/reports/courses"><i class="fa-solid fa-c"></i> Created Course Table</a></li>
-                              <li><a class="dropdown-item" href="/admin/reports/quizzes"><i class="fa-solid fa-q"></i> Created Quiz Table</a></li>
-                              <li><a class="dropdown-item" href="/admin/reports/quiz-submissions"><i class="fa-solid fa-clipboard-check"></i> Submitted Quiz Table</a></li>
-                              <li><a class="dropdown-item" href="/admin/reports/assignments"><i class="fa-solid fa-a"></i> Created Assignment Table</a></li>
-                              <li><a class="dropdown-item" href="/admin/reports/assignment-submissions"><i class="fa-solid fa-file-text"></i> Submitted Assignment Table</a></li>
+                              <li><a class="dropdown-item" href="{{ route('admin.reports.courses') }}"><i class="fa-solid fa-c"></i> Created Course Table</a></li>
+                              <li><a class="dropdown-item" href="{{ route('admin.reports.quizzes') }}"><i class="fa-solid fa-q"></i> Created Quiz Table</a></li>
+                              <li><a class="dropdown-item" href="{{ route('admin.reports.quiz-submissions') }}"><i class="fa-solid fa-clipboard-check"></i> Submitted Quiz Table</a></li>
+                              <li><a class="dropdown-item" href="{{ route('admin.reports.assignments') }}"><i class="fa-solid fa-a"></i> Created Assignment Table</a></li>
+                              <li><a class="dropdown-item" href="{{ route('admin.reports.assignment-submissions') }}"><i class="fa-solid fa-file-text"></i> Submitted Assignment Table</a></li>
                          </ul>
                     </div>
                @endif
@@ -101,7 +101,7 @@
 <script>
 // Function to update notification count
 function updateNotificationCount() {
-    fetch('/notifications/unread-count')
+    fetch("{{ route('notifications.unread-count') }}")
         .then(response => response.json())
         .then(data => {
             const badge = document.getElementById('notification-badge');
@@ -121,7 +121,7 @@ function updateNotificationCount() {
 function updateChatUnreadCount() {
     const chatBadge = document.getElementById('admin-chat-badge') || document.getElementById('admin-chat-badge-teacher');
     if (chatBadge) {
-        fetch('/chat/unread-count')
+        fetch("{{ route('chat.unread-count') }}")
             .then(response => response.json())
             .then(data => {
                 if (data.count > 0) {
@@ -155,7 +155,7 @@ function clearNotificationStorage() {
 // Handle logout with notification storage cleanup
 function handleLogout() {
     clearNotificationStorage();
-    window.location.href = '/logout';
+    window.location.href = '{{ route("logout") }}';
 }
 </script>
 

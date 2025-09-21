@@ -80,7 +80,7 @@
             $('#lessonVideo').html(renderVideo(lesson));
             $('#lessonContent').html(lesson.description);
             if (lesson.attachment) {
-                $('#lessonAttachment').html(`<a href="${lesson.attachment}" class="btn btn-outline-primary" download>Download Attachment</a>`);
+                $('#lessonAttachment').html(`<a href="{{ asset('storage/' . $lesson->attachment) }}" class="btn btn-outline-primary" download>Download Attachment</a>`);
             } else {
                 $('#lessonAttachment').html('');
             }

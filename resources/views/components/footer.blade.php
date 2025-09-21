@@ -4,9 +4,9 @@
         <div class="row g-5">
             <div class="col-lg-6 col-md-6">
                 <h4 class="text-white mb-3">Quick Link</h4>
-                <a  class="btn btn-link" href="/about">About Us</a>
-                <a class="btn btn-link" href="/contact">Contact Us</a>
-                <a class="btn btn-link" href="/courses">Courses</a>
+                <a  class="btn btn-link" href="{{ route('about') }}">About Us</a>
+                <a class="btn btn-link" href="{{ route('contact') }}">Contact Us</a>
+                <a class="btn btn-link" href="{{ route('courses') }}">Courses</a>
             </div>
             <div class="col-lg-6 col-md-6">
                 <h4 class="text-white mb-3">Contact</h4>

@@ -11,7 +11,7 @@
             @endif
         </div>
 
-        <form action="{{ url('/quiz/' . $quiz->id . '/submit') }}" method="POST" id="quizForm">
+        <form action="{{ route('quiz.submit', $quiz->id) }}" method="POST" id="quizForm">
             @csrf
             <input type="hidden" name="attempt_id" value="{{ $attemptId }}">
 

@@ -10,7 +10,7 @@
 
     <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0">
-        <a href="/" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
+        <a href="{{ route('homeslug') }}" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
             <h2 class="m-0 text-primary"><i class="fa fa-book me-3"></i>Online Learning Platform</h2>
         </a>
         <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -19,9 +19,9 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav ms-auto p-4 p-lg-0">
                 <a href="{{ route('homeslug') }}" class="nav-item nav-link {{ Request::is('/home') ? 'active' : '' }}">Home</a>
-                <a href="/about" class="nav-item nav-link {{ Request::is('about') ? 'active' : '' }}">About</a>
-                <a href="/courses" class="nav-item nav-link {{ Request::is('courses') ? 'active' : '' }}">Courses</a>
-                <a href="/contact" class="nav-item nav-link {{ Request::is('contact') ? 'active' : '' }}">Contact</a>
+                <a href="{{ route('about') }}" class="nav-item nav-link {{ Request::is('about') ? 'active' : '' }}">About</a>
+                <a href="{{ route('courses') }}" class="nav-item nav-link {{ Request::is('courses') ? 'active' : '' }}">Courses</a>
+                <a href="{{ route('contact') }}" class="nav-item nav-link {{ Request::is('contact') ? 'active' : '' }}">Contact</a>
                 @auth
                     <!-- Chat Link -->
                     @if (
@@ -71,15 +71,15 @@
 
                     
                     <div class="nav-item dropdown show">
-                        <a href="/" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">{{Auth::user()->username}}</a>
+                        <a href="{{ route('homeslug') }}" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">{{Auth::user()->username}}</a>
                         <div class="dropdown-menu fade-down m-0 show">
-                            <a href="/profile/{{auth()->user()->username}}" class="dropdown-item">Profile</a>
+                            <a href="{{ route('profile.show', auth()->user()->username) }}" class="dropdown-item">Profile</a>
                             
                             @if (auth()->user()->role->role == 'teacher')
                                 <a href="{{ route('teacher.dashboard') }}" class="dropdown-item">Dashboard</a>
                             @endif
                             @if (auth()->user()->role->role == 'student')
-                                <a href="{{ route('student.dashboard') }}" class="dropdown-item">Dashboard</a>
+                                <a href="{{ route('students.dashboard') }}" class="dropdown-item">Dashboard</a>
                             @endif
                             @if (auth()->user()->role->role == 'adminstrator')
                                 <a href="{{ route('admin.dashboard') }}" class="dropdown-item">Dashboard</a>
@@ -89,7 +89,7 @@
                         </div>
                     </div>
                 @else 
-                    <a href="{{ route('login') }}" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">Login<i class="fa fa-arrow-right ms-3"></i></a>
+                    <a href="{{ route('studentlogin') }}" class="btn btn-primary py-4 px-lg-5 d-none d-lg-block">Login<i class="fa fa-arrow-right ms-3"></i></a>
                 @endauth
                
             </div>
@@ -159,7 +159,7 @@
 
     
     function updateUserNotificationCount() {
-        fetch('/notifications/unread-count')
+        fetch("{{ route('notifications.unread-count') }}")
             .then(response => response.json())
             .then(data => {
                 if (data.count > 0) {
@@ -235,7 +235,7 @@
          // Get shown notifications from localStorage
          const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
          
-         fetch('/notifications/recent')
+         fetch("{{ route('notifications.recent') }}")
              .then(response => response.json())
              .then(data => {
                  if (data.notifications && data.notifications.length > 0) {
@@ -277,12 +277,14 @@
             return;
         }
         
-        fetch(`/notifications/${notificationId}/read`, {
+        const url = "{{ route('notifications.read', ':id') }}".replace(':id', notificationId);
+
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
@@ -290,7 +292,7 @@
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
                 return response.json();
@@ -305,7 +307,7 @@
                     toastElement.style.animation = 'slideOutRight 0.3s ease-in';
                     setTimeout(() => toastElement.remove(), 300);
                     showSuccessToast('Notification marked as read!');
-                    
+
                     // Remove from shown notifications so it can appear again if needed
                     const shownNotifications = JSON.parse(localStorage.getItem('shownNotifications') || '[]');
                     const updatedShown = shownNotifications.filter(id => id !== notificationId.toString());
@@ -318,6 +320,7 @@
         .catch(error => {
             alert('Failed to mark notification as read. Please try again.');
         });
+
     };
     
     // Clear notification localStorage on logout
@@ -328,7 +331,7 @@
     // Function to update chat unread count
     function updateChatUnreadCount() {
         if (chatBadge) {
-            fetch('/chat/unread-count')
+            fetch("{{ route('chat.unread-count') }}")
                 .then(response => response.json())
                 .then(data => {
                     if (data.count > 0) {
@@ -412,7 +415,7 @@
     // Handle logout with notification storage cleanup
     function handleLogout() {
         clearNotificationStorage();
-        window.location.href = '/logout';
+        window.location.href = '{{ route("logout") }}';
     }
     
     </script>

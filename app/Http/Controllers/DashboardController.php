@@ -23,6 +23,8 @@ class DashboardController extends Controller
 {
     public function show()
     {
+
+       
         try {
             if (Auth::check()) {
                 $users = User::count();
@@ -33,7 +35,7 @@ class DashboardController extends Controller
                 
                 // Check permissions instead of roles
                 if (in_array('all', $userPermissions) || in_array('admins', $userPermissions)) {
-                    return redirect()->route('users');
+                    return redirect()->route('admin.users.index');
                 } else if (in_array('students', $userPermissions)) {
                     return redirect()->route('students.dashboard');
                 } else if (in_array('teachers', $userPermissions)) {
@@ -42,7 +44,7 @@ class DashboardController extends Controller
                     return back()->with('warning', 'Access denied! You do not have the required permissions to access this page.');
                 }
             } else {
-                return redirect('/login')->with('warning', 'access deined! Only Admin Can Access This Page');
+                return redirect()->route('studentlogin')->with('warning', 'access deined! Only Admin Can Access This Page');
             }
 
         } catch (Exception $e) {

@@ -7,7 +7,7 @@
 
         <div class="course-boxes">
             @forelse ($courses as $course)
-                <a href="{{ url('/courses/' . Str::slug($course->id)) }}" class="course-box">
+                <a href="{{ route('courses.show', $course->id) }}" class="course-box">
                     <div class="course-img">
                         @if ($course->image)
                             <img src="{{ asset($course->image) }}" alt="{{ $course->name }}">
