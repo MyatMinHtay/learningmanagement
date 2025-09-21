@@ -185,6 +185,7 @@ Route::middleware(['auth', 'admincheck:users'])->group(function () {
     // User Management
     Route::prefix('admin/users')->middleware('admincheck:admins')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users');
+        Route::get('/export-pdf', [UserController::class, 'exportPDF'])->name('admin.users.export.pdf');
         Route::post('/create', [UserController::class, 'createuser'])->middleware('admincheck:roles');
         Route::post('/update/{user:username}', [UserController::class, 'updateuser'])->middleware('admincheck:roles')->where('username', '[A-Za-z0-9_\-]+')->name('admin.users.update');
         Route::get('/edit/{user:username}', [UserController::class, 'edituser'])->middleware('admincheck:roles')->where('username', '[A-Za-z0-9_\-]+');

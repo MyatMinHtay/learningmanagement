@@ -15,6 +15,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class UserController extends Controller
 {
@@ -267,6 +268,52 @@ class UserController extends Controller
         } catch (QueryException $e) {
             Log::error('Error in unlockuser: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Failed to unlock user account. Please try again.']);
+        }
+    }
+
+    /**
+     * Export users list to PDF with applied filters
+     * Generates PDF report of users with their roles and details
+     */
+    public function exportPDF(Request $request)
+    {
+        try {
+            $name = $request->input('name');
+            $role = $request->input('role');
+            $email = $request->input('email');
+            
+            $query = User::query();
+            
+            // Apply the same filters as index method
+            if ($name) {
+                $query->where('username', 'LIKE', '%' . $name . '%');
+            }
+
+            if ($role) {
+                $query->where('role', $role);
+            }
+
+            if ($email) {
+                $query->where('email', 'LIKE', '%' . $email . '%');
+            }
+
+            $users = $query->join('system_roles', 'users.role_id', '=', 'system_roles.id')
+                ->select('users.*', 'system_roles.role', 'system_roles.id as roleid')
+                ->latest()
+                ->get();
+            
+            $systemroles = SystemRole::all();
+
+            // Generate PDF
+            $pdf = Pdf::loadView('admin.users.users-pdf', compact('users', 'systemroles', 'request'));
+            
+            $filename = 'users-report-' . date('Y-m-d-H-i-s') . '.pdf';
+            
+            return $pdf->download($filename);
+            
+        } catch (Exception $e) {
+            Log::error('Error in users PDF export: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to export PDF. Please try again.');
         }
     }
 

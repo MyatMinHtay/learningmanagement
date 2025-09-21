@@ -5,7 +5,7 @@
           <h1 class="text-center bg-purple mt-3">Users</h1>
 
           <div class="col-12 d-flex justify-content-end my-3">
-            
+            <a href="{{ route('admin.users.export.pdf', request()->query()) }}" class="btn btn-success mx-2"><i class="fa-solid fa-file-pdf mx-1"></i>Export PDF</a>
             <a  class="btn btn-primary mx-2" data-bs-target="#usercreatemodal" data-bs-toggle="modal"><i class="fa-solid fa-plus mx-1"></i>Add Users</a>
           </div>
 
