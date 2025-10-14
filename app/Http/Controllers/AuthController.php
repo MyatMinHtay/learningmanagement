@@ -31,7 +31,7 @@ class AuthController extends Controller
 
             $teachers = User::with('role')->whereHas('role', function ($query) {
                 $query->where('role', 'teacher');
-            })->limit(4)->get();
+            })->limit(10)->get();
 
             
 

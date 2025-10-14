@@ -35,7 +35,7 @@
                         <th>Name</th>
                         <th>Category</th>
                         <th>Image</th>
-                        <th>Duration (days)</th>
+                        <th>Duration</th>
                         <th>Edit</th>
                         <th>Delete</th>
                     </tr>

@@ -11,7 +11,7 @@
                         <th>Id</th>
                         <th>Name</th>
                         <th>Image</th>
-                        <th>Duration (days)</th>
+                        <th>Duration</th>
                         <th>Lesson</th>
                         <th>Assignment</th>
                         <th>Quiz</th>
